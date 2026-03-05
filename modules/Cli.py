@@ -26,6 +26,8 @@ class CliApp:
                 return self._HandleHeal(Path(Args.Path), int(Args.Amount))
             if Args.Command == "damage":
                 return self._HandleDamage(Path(Args.Path), int(Args.Amount))
+            if Args.Command == "play":
+                return self._HandlePlay(Path(Args.Path))
 
             Parser.print_help()
             return 2
@@ -55,8 +57,14 @@ class CliApp:
         Damage.add_argument("Path", help="Path to JSON file to load/save.")
         Damage.add_argument("Amount", help="Amount of damage (integer).")
 
-        Play = Subparsers.add_parser("play", help="Interactive play session (load or create save).")
-        Play.add_argument("Path", help="Path to JSON save file")
+        Play = Subparsers.add_parser(
+            "play", 
+            help="Interactive play session (load or create save)."
+            )
+        Play.add_argument(
+            "Path", 
+            help="Path to JSON save file"
+            )
 
         return Parser
 

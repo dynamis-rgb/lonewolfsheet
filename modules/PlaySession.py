@@ -28,8 +28,8 @@ class PlaySession:
         
         Sheet=CharacterSheet(
             Name="Lone Wolf",
-            CombatSkill=17
-            Endurance=Endurance(Current=22, Max=22)
+            CombatSkill=17,
+            Endurance=Endurance(Current=22, Max=22),
             KaiDisciplines=["Camouflage","Hunting", "Sixth Sense", "Healing", "Tracking"],
             GoldCrowns=12,
             CurrentBook=1,
@@ -46,13 +46,13 @@ class PlaySession:
     
     def StartFight(self, EnemyCombatSkill: int, EnemyEndurancePoints: int) -> str:
         self.Fight = FightState(
-            EnemyCombatSkill=int(EnemyCombatSkill)
+            EnemyCombatSkill=int(EnemyCombatSkill),
             EnemyEndurance=Endurance(Current=int(EnemyEndurancePoints), Max=int(EnemyEndurancePoints)),
         )
-        Ratio=self.Sheet.CombatSkill - self.FightEnemyCombatSkill
+        Ratio=self.Sheet.CombatSkill - self.Fight.EnemyCombatSkill
         return (
             f"Fight Started. \n"
-            f"Your CS: {self.Sheet.CombatSkill} | Enemy CS: {Self.Fight.EnemyCombatSkill} | Combat Ratio: {Ratio}\n"
+            f"Your CS: {self.Sheet.CombatSkill} | Enemy CS: {self.Fight.EnemyCombatSkill} | Combat Ratio: {Ratio}\n"
             f"Enemy EP: {self.Fight.EnemyEndurance.Current}/{self.Fight.EnemyEndurance.Max}\n"
             f"Use your book's Combat Results Table with (Combat Ratio, Random Number).\n"
             f"Then run: apply <YourDamage> <EnemyDamage>"

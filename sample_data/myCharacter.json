@@ -1,0 +1,36 @@
+{
+  "SchemaVersion": 1,
+  "Game": {
+    "Series": "Lone Wolf",
+    "SupportedBooks": [
+      1,
+      2,
+      3,
+      4,
+      5
+    ],
+    "CurrentBook": 1
+  },
+  "Character": {
+    "Name": "Lone Wolf",
+    "KaiRank": "Initiate",
+    "KaiDisciplines": [
+      "Camouflage",
+      "Hunting",
+      "Tracking",
+      "Sixth Sense",
+      "Healing"
+    ],
+    "CombatSkill": 17,
+    "Endurance": {
+      "Current": 0,
+      "Max": 22
+    },
+    "GoldCrowns": 12
+  },
+  "Inventory": {
+    "Weapons": [],
+    "BackpackItems": [],
+    "SpecialItems": []
+  }
+}

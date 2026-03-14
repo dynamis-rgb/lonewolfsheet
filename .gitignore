@@ -1,0 +1,40 @@
+# Python bytecode
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+
+# Virtual environments
+.venv/
+venv/
+env/
+
+# VS Code settings
+.vscode/
+
+# pytest cache
+.pytest_cache/
+
+# coverage reports
+.coverage
+htmlcov/
+
+# OS junk
+.DS_Store
+Thumbs.db
+
+# build artifacts
+build/
+dist/
+*.egg-info/
+
+# logs
+*.log
+
+# temporary files
+*.tmp
+*.bak
+
+configs/CombatResultsTable.json
+!configs/CombatResultsTable_template.json
+configs/CombatResultsTable_local.json

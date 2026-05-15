@@ -51,6 +51,6 @@ class CombatResultsTable:
             raise ValueError(f"Invalid CRT cell at ratio {Ratio}, roll {RandomNumber}")
 
         return CombatOutcome(
-            YouDamage=int(Cell[0]),
-            EnemyDamage=int(Cell[1]),
+            EnemyDamage=int(Cell[0]),
+            YouDamage=int(Cell[1]),
         )

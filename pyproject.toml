@@ -29,3 +29,9 @@ select = ["E", "F", "I"]
 [tool.pytest.ini_options]
 testpaths = ["tests"]
 pythonpath = ["."]
+
+[project.scripts]
+lonewolfsheet = "main_programs.main:main"
+
+[tool.setuptools]
+packages = ["modules", "main_programs"]

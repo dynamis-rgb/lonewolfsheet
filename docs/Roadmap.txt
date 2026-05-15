@@ -1,0 +1,64 @@
+NOW
+
+1. Interactive first-time character creation
+- Replace the current static default character creation flow.
+- Roll 3 random numbers one at a time (0-9).
+- Let the user choose one roll for Combat Skill and one roll for Endurance Points.
+- Discard the unused roll.
+- Set initial Combat Skill to 10 + chosen CS roll.
+- Set initial Endurance Points to 20 + chosen EP roll.
+- Create the CharacterSheet with Name fixed to "Lone Wolf".
+- Prompt for a simple save file name string and write the initial JSON save file.
+- `create` should become the main first-time creation flow.
+
+2. Add a current section attribute
+- Add a `CurrentSection` field to the character model and JSON save format.
+- Show the current section in status/summary output where appropriate.
+
+3. Prompt for current section on quit
+- When the user selects `quit` in play mode, ask whether they want to enter their current section before quitting.
+- If yes, save the new section value before exiting.
+
+
+NEXT
+
+4. Save-file management improvements
+- Add a save file directory setting in app config.
+- Do not store user runtime save-directory settings in `pyproject.toml`.
+- Use a dedicated config location instead.
+
+5. Browse save files in the CLI
+- Show available JSON save files from the configured save directory.
+- For each valid save, display file name, rank/book number, and section number.
+
+6. Load file option in the CLI
+- Add a CLI flow that lets the user choose a save file to load.
+- `play <path>` should continue to support explicit file loading.
+- `play` with no file path can ask whether to start a new character.
+
+7. Validation rules
+- Add support in `validation.py` for validating:
+- correct number of skills
+- correct number of weapons
+- correct number of backpack items
+- correct number of special items
+
+
+LATER
+
+8. Support for books 6 through 12
+- Extend the rules and data model beyond books 1-5.
+
+9. Carry forward support for abilities from books 1 through 5
+- Include ongoing support for abilities such as Hunting, Healing, and Mindblast combat bonuses in books 6-12.
+
+10. Items with stats
+- Figure out the best way to model items with gameplay effects.
+- Examples: health restored by potions, CS bonuses from weapons, EP bonuses from special items.
+
+11. Consumables
+- Figure out the best way to support consumable items such as Alether potions and health potions.
+
+12. Ongoing states
+- Figure out the best way to track periodic or delayed states such as poisoning and pending death unless cured.
+- Treat this as a stretch goal after the rest of the core character flow is stable.

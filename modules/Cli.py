@@ -3,7 +3,7 @@ from __future__ import annotations
 import argparse
 from dataclasses import dataclass
 from pathlib import Path
-from typing import Any
+from typing import Any, Sequence
 
 from modules.DomainModels import CharacterSheet, Endurance
 from modules.JsonRepository import JsonRepository, JsonRepositoryError
@@ -164,6 +164,7 @@ class CliApp:
                     "  add-special <name> | remove-special <name>\n"
                     "  fight <enemyCS> <enemyEP>\n"
                     "  roll\n"
+                    "  round\n"
                     "  apply <yourDamage> <enemyDamage>\n"
                     "  quit\n"
                 )
@@ -185,6 +186,10 @@ class CliApp:
 
             if Command == "fight" and len(Args) == 2:
                 print(Session.StartFight(int(Args[0]), int(Args[1])))
+                continue
+
+            if Command == "round":
+                print(Session.ResolveAutomaticRound())
                 continue
 
             if Command == "apply" and len(Args) == 2:

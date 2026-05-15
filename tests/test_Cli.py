@@ -53,7 +53,7 @@ def test_cli_damage(tmp_path):
 
     assert sheet.Endurance.Current == sheet.Endurance.Max - 5
 
-    def test_cli_play_quits_immediately(tmp_path, monkeypatch):
+def test_cli_play_quits_immediately(tmp_path, monkeypatch):
     import builtins
     from modules.Cli import CliApp
     from modules.JsonRepository import JsonRepository

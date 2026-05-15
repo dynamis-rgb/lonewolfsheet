@@ -33,3 +33,13 @@ def test_CharacterSheet_AddDiscipline_DedupesAndIgnoresBlank():
     Sheet.AddDiscipline("Healing")
     Sheet.AddDiscipline("   ")
     assert Sheet.KaiDisciplines == ["Healing"]
+
+
+def test_CharacterSheet_SetCurrentSection_RejectsNonPositive():
+    Sheet = CharacterSheet(Name="Test", CombatSkill=15, Endurance=Endurance(Current=10, Max=10))
+
+    try:
+        Sheet.SetCurrentSection(0)
+        assert False, "Expected ValueError"
+    except ValueError:
+        assert Sheet.CurrentSection == 1

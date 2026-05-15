@@ -106,6 +106,7 @@ class CharacterSheet:
     KaiDisciplines: list[str] = field(default_factory=list)
     GoldCrowns: int = 0
     CurrentBook: int = 1
+    CurrentSection: int = 1
     Inventory: Inventory = field(default_factory=Inventory)
 
     def Heal(self, Amount: int) -> None:
@@ -144,6 +145,11 @@ class CharacterSheet:
             raise ValueError("Book must be 1 or greater")
         self.CurrentBook = Book
 
+    def SetCurrentSection(self, Section: int) -> None:
+        if Section < 1:
+            raise ValueError("Section must be 1 or greater")
+        self.CurrentSection = Section
+
     def ToDict(self) -> dict[str, Any]:
         return {
             "SchemaVersion": 1,
@@ -151,6 +157,7 @@ class CharacterSheet:
                 "Series": "Lone Wolf",
                 "SupportedBooks": [1, 2, 3, 4, 5],
                 "CurrentBook": int(self.CurrentBook),
+                "CurrentSection": int(self.CurrentSection),
             },
             "Character": {
                 "Name": self.Name,
@@ -177,5 +184,6 @@ class CharacterSheet:
             Endurance=Endurance.FromDict(CharacterData["Endurance"]),
             GoldCrowns=int(CharacterData.get("GoldCrowns", 0)),
             CurrentBook=int(GameData.get("CurrentBook", 1)),
+            CurrentSection=int(GameData.get("CurrentSection", 1)),
             Inventory=Inventory.FromDict(InventoryData),
         )

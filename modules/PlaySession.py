@@ -36,25 +36,10 @@ class PlaySession:
 
         CtrTable = CombatResultsTable.LoadFromJson(LocalCtrTablePath)
 
-        if SavePath.exists():
-            Sheet = Repo.LoadCharacter(SavePath)
-            return PlaySession(
-                Repo=Repo,
-                SavePath=SavePath,
-                Sheet=Sheet,
-                CtrTable=CtrTable,
-            )
+        if not SavePath.exists():
+            raise FileNotFoundError(f"Save file not found: {SavePath}")
 
-        Sheet = CharacterSheet(
-            Name="Lone Wolf",
-            CombatSkill=17,
-            Endurance=Endurance(Current=22, Max=22),
-            KaiDisciplines=["Camouflage", "Hunting", "Sixth Sense", "Healing", "Tracking"],
-            GoldCrowns=12,
-            CurrentBook=1,
-        )
-
-        Repo.SaveCharacter(Sheet, SavePath)
+        Sheet = Repo.LoadCharacter(SavePath)
         return PlaySession(
             Repo=Repo,
             SavePath=SavePath,
@@ -142,6 +127,7 @@ class PlaySession:
         Lines: list[str] = []
         Lines.append(f"Name: {self.Sheet.Name}")
         Lines.append(f"Book: {self.Sheet.CurrentBook}")
+        Lines.append(f"Section: {self.Sheet.CurrentSection}")
         Lines.append(f"CS: {self.Sheet.CombatSkill}")
         Lines.append(f"EP: {self.Sheet.Endurance.Current}/{self.Sheet.Endurance.Max}")
         Lines.append(f"Gold: {self.Sheet.GoldCrowns}")

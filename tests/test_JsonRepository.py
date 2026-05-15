@@ -12,6 +12,7 @@ def _MakeSheet() -> CharacterSheet:
         KaiDisciplines=["Camouflage", "Hunting", "Tracking", "Sixth Sense", "Healing"],
         GoldCrowns=12,
         CurrentBook=1,
+        CurrentSection=42,
     )
 
 
@@ -31,6 +32,7 @@ def test_JsonRepository_SaveThenLoad_RoundTrips(tmp_path):
     assert Loaded.KaiDisciplines == Sheet.KaiDisciplines
     assert Loaded.GoldCrowns == Sheet.GoldCrowns
     assert Loaded.CurrentBook == Sheet.CurrentBook
+    assert Loaded.CurrentSection == Sheet.CurrentSection
 
 
 def test_JsonRepository_LoadCharacter_RejectsInvalidJson(tmp_path):

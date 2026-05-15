@@ -23,14 +23,26 @@
     ],
     "CombatSkill": 17,
     "Endurance": {
-      "Current": 0,
+      "Current": 20,
       "Max": 22
     },
     "GoldCrowns": 12
   },
   "Inventory": {
-    "Weapons": [],
-    "BackpackItems": [],
-    "SpecialItems": []
+    "Weapons": [
+      "sword",
+      "axe",
+      "spear"
+    ],
+    "BackpackItems": [
+      "laumspur",
+      "meal",
+      "meal",
+      "laumspur"
+    ],
+    "SpecialItems": [
+      "Crystal Star Pendant",
+      "Padded Waistcoat"
+    ]
   }
 }

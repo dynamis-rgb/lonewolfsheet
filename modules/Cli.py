@@ -1,9 +1,10 @@
 from __future__ import annotations
 
 import argparse
+import random
 from dataclasses import dataclass
 from pathlib import Path
-from typing import Any, Sequence
+from typing import Sequence
 
 from modules.DomainModels import CharacterSheet, Endurance
 from modules.JsonRepository import JsonRepository, JsonRepositoryError
@@ -19,7 +20,7 @@ class CliApp:
 
         try:
             if Args.Command == "create":
-                return self._HandleCreate(Path(Args.Path))
+                return self._HandleCreate()
             if Args.Command == "show":
                 return self._HandleShow(Path(Args.Path))
             if Args.Command == "set-book":
@@ -31,7 +32,7 @@ class CliApp:
             if Args.Command == "damage":
                 return self._HandleDamage(Path(Args.Path), int(Args.Amount))
             if Args.Command == "play":
-                return self._HandlePlay(Path(Args.Path))
+                return self._HandlePlay(Path(Args.Path) if Args.Path else None)
 
             Parser.print_help()
             return 2
@@ -47,8 +48,7 @@ class CliApp:
 
         Subparsers = Parser.add_subparsers(dest="Command", required=True)
 
-        Create = Subparsers.add_parser("create", help="Create a new character JSON file.")
-        Create.add_argument("Path", help="Path to JSON file to create.")
+        Subparsers.add_parser("create", help="Create a new character JSON file.")
 
         Show = Subparsers.add_parser("show", help="Show character summary from JSON file.")
         Show.add_argument("Path", help="Path to JSON file to load.")
@@ -71,28 +71,53 @@ class CliApp:
 
         Play = Subparsers.add_parser(
             "play", 
-            help="Interactive play session (load or create save)."
+            help="Interactive play session."
             )
         Play.add_argument(
-            "Path", 
+            "Path",
+            nargs="?",
             help="Path to JSON save file"
             )
 
         return Parser
 
-    def _HandleCreate(self, FilePath: Path) -> int:
+    def _HandleCreate(self) -> int:
+        FilePath = self._RunCharacterCreationFlow()
+        return self._HandlePlay(FilePath)
+
+    def _RunCharacterCreationFlow(self) -> Path:
+        print("First-Time Character Creation")
+        Rolls = []
+        for Index in range(3):
+            Roll = random.randint(0, 9)
+            Rolls.append(Roll)
+            print(f"Roll {Index + 1}: {Roll}")
+
+        CsIndex = self._PromptForRollChoice(
+            Prompt="Choose roll for Combat Skill [1-3]: ",
+            AllowedIndexes={0, 1, 2},
+        )
+        EpIndex = self._PromptForRollChoice(
+            Prompt="Choose roll for Endurance [1-3]: ",
+            AllowedIndexes={0, 1, 2} - {CsIndex},
+        )
+
+        CombatSkill = 10 + Rolls[CsIndex]
+        EndurancePoints = 20 + Rolls[EpIndex]
+        FilePath = self._PromptForSavePath()
+
         Sheet = CharacterSheet(
             Name="Lone Wolf",
-            CombatSkill=17,
-            Endurance=Endurance(Current=22, Max=22),
-            KaiDisciplines=["Camouflage", "Hunting", "Tracking", "Sixth Sense", "Healing"],
-            GoldCrowns=12,
+            CombatSkill=CombatSkill,
+            Endurance=Endurance(Current=EndurancePoints, Max=EndurancePoints),
             CurrentBook=1,
+            CurrentSection=1,
         )
 
         self.Repo.SaveCharacter(Sheet, FilePath)
         print(f"Created character file: {FilePath}")
-        return 0
+        print(self._FormatSummary(Sheet))
+        return FilePath
 
     def _HandleShow(self, FilePath: Path) -> int:
         Sheet = self.Repo.LoadCharacter(FilePath)
@@ -147,6 +172,7 @@ class CliApp:
         Lines: list[str] = []
         Lines.append(f"Name: {Sheet.Name}")
         Lines.append(f"Book: {Sheet.CurrentBook}")
+        Lines.append(f"Section: {Sheet.CurrentSection}")
         Lines.append(f"Kai Rank: {Sheet.KaiRank}")
         Lines.append(f"Combat Skill: {Sheet.CombatSkill}")
         Lines.append(f"Endurance: {Sheet.Endurance.Current}/{Sheet.Endurance.Max}")
@@ -162,7 +188,17 @@ class CliApp:
 
         return "\n".join(Lines)
     
-    def _HandlePlay(self, FilePath: Path) -> int:
+    def _HandlePlay(self, FilePath: Path | None) -> int:
+        if FilePath is None:
+            if self._PromptYesNo("No save file specified. Start a new character? [y/n]: "):
+                FilePath = self._RunCharacterCreationFlow()
+                return self._HandlePlay(FilePath)
+            return 0
+
+        if not FilePath.exists():
+            print(f"Save file not found: {FilePath}")
+            return 2
+
         from modules.PlaySession import PlaySession  # local import to keep dependencies simple
 
         Session = PlaySession.CreateOrLoad(self.Repo, FilePath)
@@ -185,6 +221,7 @@ class CliApp:
             Args = Parts[1:]
 
             if Command in ("quit", "exit"):
+                self._PromptForSectionOnQuit(Session)
                 break
 
             if Command == "help":
@@ -323,3 +360,64 @@ class CliApp:
 
             print("Unknown command. Type 'help'.")
         return 0
+
+    def _PromptForRollChoice(self, Prompt: str, AllowedIndexes: set[int]) -> int:
+        while True:
+            Raw = input(Prompt).strip()
+            try:
+                Choice = int(Raw)
+            except ValueError:
+                print("Enter a number from the available choices.")
+                continue
+
+            Index = Choice - 1
+            if Index in AllowedIndexes:
+                return Index
+
+            AllowedText = ", ".join(str(Value + 1) for Value in sorted(AllowedIndexes))
+            print(f"Choose one of: {AllowedText}")
+
+    def _PromptForSavePath(self) -> Path:
+        while True:
+            Raw = input("Enter a save file name: ").strip()
+            if not Raw:
+                print("Save file name cannot be blank.")
+                continue
+            if Raw != Path(Raw).name:
+                print("Enter a simple file name without folders.")
+                continue
+            if any(Char in Raw for Char in '<>:"/\\|?*'):
+                print("Save file name contains invalid characters.")
+                continue
+
+            FileName = Raw if Raw.lower().endswith(".json") else f"{Raw}.json"
+            FilePath = Path("sample_data") / FileName
+            if FilePath.exists():
+                print(f"Save file already exists: {FilePath}")
+                continue
+            return FilePath
+
+    def _PromptYesNo(self, Prompt: str) -> bool:
+        while True:
+            Raw = input(Prompt).strip().lower()
+            if Raw in ("y", "yes"):
+                return True
+            if Raw in ("n", "no"):
+                return False
+            print("Enter yes or no.")
+
+    def _PromptForSectionOnQuit(self, Session) -> None:
+        if not self._PromptYesNo("Do you want to enter your current section before you quit? [y/n]: "):
+            return
+
+        while True:
+            Raw = input("Enter current section: ").strip()
+            try:
+                Session.Sheet.SetCurrentSection(int(Raw))
+            except ValueError:
+                print("Section must be a number 1 or greater.")
+                continue
+
+            Session.Save()
+            print(f"Saved current section: {Session.Sheet.CurrentSection}")
+            return

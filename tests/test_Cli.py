@@ -53,6 +53,38 @@ def test_cli_damage(tmp_path):
 
     assert sheet.Endurance.Current == sheet.Endurance.Max - 5
 
+def test_cli_set_book(tmp_path):
+    repo = JsonRepository()
+    app = CliApp(repo)
+
+    file_path = tmp_path / "character.json"
+
+    app.Run(["create", str(file_path)])
+
+    exit_code = app.Run(["set-book", str(file_path), "2"])
+
+    assert exit_code == 0
+
+    sheet = repo.LoadCharacter(file_path)
+
+    assert sheet.CurrentBook == 2
+
+def test_cli_add_discipline(tmp_path):
+    repo = JsonRepository()
+    app = CliApp(repo)
+
+    file_path = tmp_path / "character.json"
+
+    app.Run(["create", str(file_path)])
+
+    exit_code = app.Run(["add-discipline", str(file_path), "Mindblast"])
+
+    assert exit_code == 0
+
+    sheet = repo.LoadCharacter(file_path)
+
+    assert "Mindblast" in sheet.KaiDisciplines
+
 def test_cli_play_quits_immediately(tmp_path, monkeypatch):
     import builtins
     from modules.Cli import CliApp

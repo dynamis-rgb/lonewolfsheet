@@ -139,6 +139,11 @@ class CharacterSheet:
         if Clean in self.KaiDisciplines:
             self.KaiDisciplines.remove(Clean)
 
+    def SetCurrentBook(self, Book: int) -> None:
+        if Book < 1:
+            raise ValueError("Book must be 1 or greater")
+        self.CurrentBook = Book
+
     def ToDict(self) -> dict[str, Any]:
         return {
             "SchemaVersion": 1,

@@ -22,6 +22,10 @@ class CliApp:
                 return self._HandleCreate(Path(Args.Path))
             if Args.Command == "show":
                 return self._HandleShow(Path(Args.Path))
+            if Args.Command == "set-book":
+                return self._HandleSetBook(Path(Args.Path), int(Args.Book))
+            if Args.Command == "add-discipline":
+                return self._HandleAddDiscipline(Path(Args.Path), " ".join(Args.Name))
             if Args.Command == "heal":
                 return self._HandleHeal(Path(Args.Path), int(Args.Amount))
             if Args.Command == "damage":
@@ -48,6 +52,14 @@ class CliApp:
 
         Show = Subparsers.add_parser("show", help="Show character summary from JSON file.")
         Show.add_argument("Path", help="Path to JSON file to load.")
+
+        SetBook = Subparsers.add_parser("set-book", help="Set current book and save.")
+        SetBook.add_argument("Path", help="Path to JSON file to load/save.")
+        SetBook.add_argument("Book", help="Current book number.")
+
+        AddDiscipline = Subparsers.add_parser("add-discipline", help="Add a Kai discipline and save.")
+        AddDiscipline.add_argument("Path", help="Path to JSON file to load/save.")
+        AddDiscipline.add_argument("Name", nargs="+", help="Name of the discipline to add.")
 
         Heal = Subparsers.add_parser("heal", help="Heal Endurance and save.")
         Heal.add_argument("Path", help="Path to JSON file to load/save.")
@@ -85,6 +97,30 @@ class CliApp:
     def _HandleShow(self, FilePath: Path) -> int:
         Sheet = self.Repo.LoadCharacter(FilePath)
         print(self._FormatSummary(Sheet))
+        return 0
+
+    def _HandleSetBook(self, FilePath: Path, Book: int) -> int:
+        Sheet = self.Repo.LoadCharacter(FilePath)
+        Before = Sheet.CurrentBook
+        Sheet.SetCurrentBook(Book)
+        After = Sheet.CurrentBook
+
+        self.Repo.SaveCharacter(Sheet, FilePath)
+        print(f"Set current book: {Before} -> {After}")
+        return 0
+
+    def _HandleAddDiscipline(self, FilePath: Path, Name: str) -> int:
+        Sheet = self.Repo.LoadCharacter(FilePath)
+        Before = len(Sheet.KaiDisciplines)
+        CleanName = Name.strip()
+        Sheet.AddDiscipline(CleanName)
+        After = len(Sheet.KaiDisciplines)
+
+        self.Repo.SaveCharacter(Sheet, FilePath)
+        if After > Before:
+            print(f"Added discipline: {CleanName}")
+        else:
+            print("Discipline already present or invalid.")
         return 0
 
     def _HandleHeal(self, FilePath: Path, Amount: int) -> int:
@@ -156,6 +192,8 @@ class CliApp:
                     "Commands:\n"
                     "  status\n"
                     "  save\n"
+                    "  book <n>\n"
+                    "  add-discipline <name>\n"
                     "  heal <n> | damage <n>\n"
                     "  gold +<n> | gold -<n>\n"
                     "  inv\n"
@@ -198,6 +236,18 @@ class CliApp:
 
             if Command == "heal" and len(Args) == 1:
                 Session.Sheet.Heal(int(Args[0]))
+                Session.Save()
+                print(Session.StatusText())
+                continue
+
+            if Command == "book" and len(Args) == 1:
+                Session.Sheet.SetCurrentBook(int(Args[0]))
+                Session.Save()
+                print(Session.StatusText())
+                continue
+
+            if Command == "add-discipline" and Args:
+                Session.Sheet.AddDiscipline(" ".join(Args))
                 Session.Save()
                 print(Session.StatusText())
                 continue

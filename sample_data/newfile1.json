@@ -1,0 +1,42 @@
+{
+  "SchemaVersion": 1,
+  "Game": {
+    "Series": "Lone Wolf",
+    "SupportedBooks": [
+      1,
+      2,
+      3,
+      4,
+      5
+    ],
+    "CurrentBook": 1,
+    "CurrentSection": 175
+  },
+  "Character": {
+    "Name": "Lone Wolf",
+    "KaiRank": "Initiate",
+    "KaiDisciplines": [
+      "Camouflage",
+      "Hunting",
+      "Tracking",
+      "Weaponskill in Broadsword +2 CS",
+      "Animal Kinship"
+    ],
+    "CombatSkill": 18,
+    "Endurance": {
+      "Current": 15,
+      "Max": 28
+    },
+    "GoldCrowns": 3
+  },
+  "Inventory": {
+    "Weapons": [
+      "Starfire's Sword",
+      "Dagger"
+    ],
+    "BackpackItems": [
+      "coil of rope"
+    ],
+    "SpecialItems": []
+  }
+}

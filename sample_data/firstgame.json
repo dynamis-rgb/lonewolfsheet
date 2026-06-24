@@ -1,0 +1,31 @@
+{
+  "SchemaVersion": 1,
+  "Game": {
+    "Series": "Lone Wolf",
+    "SupportedBooks": [
+      1,
+      2,
+      3,
+      4,
+      5
+    ],
+    "CurrentBook": 1,
+    "CurrentSection": 1
+  },
+  "Character": {
+    "Name": "Lone Wolf",
+    "KaiRank": "Initiate",
+    "KaiDisciplines": [],
+    "CombatSkill": 18,
+    "Endurance": {
+      "Current": 26,
+      "Max": 26
+    },
+    "GoldCrowns": 0
+  },
+  "Inventory": {
+    "Weapons": [],
+    "BackpackItems": [],
+    "SpecialItems": []
+  }
+}

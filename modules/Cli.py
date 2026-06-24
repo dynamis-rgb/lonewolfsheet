@@ -6,8 +6,11 @@ from dataclasses import dataclass
 from pathlib import Path
 from typing import Sequence
 
+from modules.AppConfig import LoadAppConfig
 from modules.DomainModels import CharacterSheet, Endurance
 from modules.JsonRepository import JsonRepository, JsonRepositoryError
+from modules.AppConfig import AppConfig
+
 
 
 @dataclass(frozen=True)
@@ -389,9 +392,9 @@ class CliApp:
             if any(Char in Raw for Char in '<>:"/\\|?*'):
                 print("Save file name contains invalid characters.")
                 continue
-
+            Config=LoadAppConfig()
             FileName = Raw if Raw.lower().endswith(".json") else f"{Raw}.json"
-            FilePath = Path("sample_data") / FileName
+            FilePath = Config.SaveDirectory / FileName
             if FilePath.exists():
                 print(f"Save file already exists: {FilePath}")
                 continue

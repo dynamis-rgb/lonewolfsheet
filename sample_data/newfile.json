@@ -9,40 +9,39 @@
       4,
       5
     ],
-    "CurrentBook": 1
+    "CurrentBook": 1,
+    "CurrentSection": 1
   },
   "Character": {
     "Name": "Lone Wolf",
     "KaiRank": "Initiate",
     "KaiDisciplines": [
-      "Camouflage",
-      "Hunting",
-      "Tracking",
-      "Sixth Sense",
-      "Healing"
+      "camouflage",
+      "sixth sense",
+      "healing",
+      "mindblast",
+      "animal kinship"
     ],
-    "CombatSkill": 17,
+    "CombatSkill": 14,
     "Endurance": {
-      "Current": 20,
-      "Max": 22
+      "Current": 24,
+      "Max": 24
     },
-    "GoldCrowns": 12
+    "GoldCrowns": 20
   },
   "Inventory": {
     "Weapons": [
-      "sword",
-      "axe",
-      "spear"
+      "sword"
     ],
     "BackpackItems": [
-      "laumspur",
+      "laumspur-4",
       "meal",
-      "meal",
-      "laumspur"
+      "meal"
     ],
     "SpecialItems": [
-      "Crystal Star Pendant",
-      "Padded Waistcoat"
+      "map of sommerlund",
+      "seal of hammerdal",
+      "chainmail waistcoat"
     ]
   }
 }

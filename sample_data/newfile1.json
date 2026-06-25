@@ -35,8 +35,28 @@
       "Dagger"
     ],
     "BackpackItems": [
-      "coil of rope"
+      "coil of rope",
+      "meal1",
+      "meal2",
+      "meal3",
+      "meal4",
+      "meal5",
+      "meal6",
+      "meal7"
     ],
-    "SpecialItems": []
+    "SpecialItems": [
+      "seal of hammerdal",
+      "firesphere",
+      "sommerswerd",
+      "Chainmail waistcoat",
+      "Silver Helm",
+      "Stone Effigy",
+      "red pass",
+      "padded leather waistcoat",
+      "crystal star pendant",
+      "item1",
+      "item2",
+      "item3"
+    ]
   }
 }

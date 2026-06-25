@@ -18,6 +18,9 @@ The code is currently organized into these main areas:
 
 ### `main_programs/main.py`
 
+python -m main_programs.main show sample_data\firstgame.json     --- shows the contents of the specified play file
+python -m main_programs.main play sample_data\firstgame.json     --- plays a game using the specified play file
+
 #### `main() -> int`
 
 Purpose:

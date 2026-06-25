@@ -11,6 +11,7 @@ from modules.DomainModels import CharacterSheet, Endurance
 from modules.JsonRepository import JsonRepository, JsonRepositoryError
 from modules.AppConfig import AppConfig
 
+from modules.AppConfig import LoadAppConfig, LoadInventoryRules
 
 
 @dataclass(frozen=True)
@@ -206,6 +207,8 @@ class CliApp:
 
         Session = PlaySession.CreateOrLoad(self.Repo, FilePath)
 
+        InventoryRules = LoadInventoryRules()
+
         print("LoneWolfSheet v1 (type 'help' for commands)")
         print(Session.StatusText())
 
@@ -335,10 +338,21 @@ class CliApp:
 
             if Command == "add-backpack" and Args:
                 Name = " ".join(Args)
+
+                if len(Session.Sheet.Inventory.BackpackItems) >= InventoryRules.MaxBackpackItems:
+                    print(
+                        f"Backpack is full "
+                        f"({len(Session.Sheet.Inventory.BackpackItems)}/{InventoryRules.MaxBackpackItems})."
+                    )
+                    continue
+
                 Added = Session.Sheet.Inventory.AddBackpackItem(Name)
                 Session.Save()
                 print("Backpack item added." if Added else "Invalid item name.")
                 continue
+            
+
+
 
             if Command == "remove-backpack" and Args:
                 Name = " ".join(Args)
@@ -349,10 +363,20 @@ class CliApp:
 
             if Command == "add-special" and Args:
                 Name = " ".join(Args)
+
+                if len(Session.Sheet.Inventory.SpecialItems) >= InventoryRules.MaxSpecialItems:
+                    print(
+                        f"Special Item limit reached "
+                        f"({len(Session.Sheet.Inventory.SpecialItems)}/{InventoryRules.MaxSpecialItems})."
+                    )
+                    continue
+
                 Added = Session.Sheet.Inventory.AddSpecialItem(Name)
                 Session.Save()
-                print("Special item added." if Added else "Special item already present or invalid.")
+                print("Special Item added." if Added else "Special item already present or invalid.")
                 continue
+
+           
 
             if Command == "remove-special" and Args:
                 Name = " ".join(Args)

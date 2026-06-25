@@ -13,6 +13,9 @@ from modules.AppConfig import AppConfig
 
 from modules.AppConfig import LoadAppConfig, LoadInventoryRules
 
+from modules.RuleBooks1to5 import RuleBooks1to5
+
+
 
 @dataclass(frozen=True)
 class CliApp:
@@ -207,6 +210,10 @@ class CliApp:
 
         Session = PlaySession.CreateOrLoad(self.Repo, FilePath)
 
+        Rules = RuleBooks1to5(LoadInventoryRules())
+
+
+
         InventoryRules = LoadInventoryRules()
 
         print("LoneWolfSheet v1 (type 'help' for commands)")
@@ -339,17 +346,17 @@ class CliApp:
             if Command == "add-backpack" and Args:
                 Name = " ".join(Args)
 
-                if len(Session.Sheet.Inventory.BackpackItems) >= InventoryRules.MaxBackpackItems:
-                    print(
-                        f"Backpack is full "
-                        f"({len(Session.Sheet.Inventory.BackpackItems)}/{InventoryRules.MaxBackpackItems})."
-                    )
+                Check  = Rules.CanAddBackpackItem(Session.Sheet)
+
+                if not Check.Allowed:
+                    print(Check.Reason)
                     continue
 
                 Added = Session.Sheet.Inventory.AddBackpackItem(Name)
                 Session.Save()
-                print("Backpack item added." if Added else "Invalid item name.")
-                continue
+                print("Backpack item added. " if added else "Invalid item name.")
+
+
             
 
 
@@ -364,13 +371,12 @@ class CliApp:
             if Command == "add-special" and Args:
                 Name = " ".join(Args)
 
-                if len(Session.Sheet.Inventory.SpecialItems) >= InventoryRules.MaxSpecialItems:
-                    print(
-                        f"Special Item limit reached "
-                        f"({len(Session.Sheet.Inventory.SpecialItems)}/{InventoryRules.MaxSpecialItems})."
-                    )
+                Check = Rules.CanAddSpecialItem(Session.Sheet)
+                if not Check.Allowed:
+                    print(Check.Reason)
                     continue
 
+                
                 Added = Session.Sheet.Inventory.AddSpecialItem(Name)
                 Session.Save()
                 print("Special Item added." if Added else "Special item already present or invalid.")

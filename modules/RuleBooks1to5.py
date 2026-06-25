@@ -4,6 +4,62 @@ import json
 from dataclasses import dataclass
 from pathlib import Path
 
+from modules.AppConfig import InventoryRules
+from modules.DomainModels import CharacterSheet
+
+
+@dataclass(frozen=True)
+class InventoryCheckResult:
+    Allowed: bool
+    Reason: str = ""
+
+class RuleBooks1to5:
+    def __init__(self, InventoryRules: InventoryRules) -> None:
+        self.InventoryRules = InventoryRules
+    
+    def CanAddBackpackItem(self, Sheet: CharacterSheet) -> InventoryCheckResult:
+        CurrentCount=len(Sheet.Inventory.BackpackItems)
+        MaxCount = self.InventoryRules.MaxBackpackItems
+
+        if CurrentCount >= MaxCount:
+            return InventoryCheckResult(
+                Allowed=False,
+                Reason=f"Backpack is full ({CurrentCount}/{MaxCount})."
+            )
+        
+        return InventoryCheckResult(Allowed=True)
+    
+    def CanAddSpecialItem(self, Sheet: CharacterSheet) -> InventoryCheckResult:
+        CurrentCount = len(Sheet.Inventory.SpecialItems)
+        MaxCount = self.InventoryRules.MaxSpecialItems
+
+        if CurrentCount >= MaxCount:
+            return InventoryCheckResult(
+                Allowed=False,
+                Reason=f"Special item limit readched ({CurrentCount}/{MaxCount})."
+            )
+        
+        return InventoryCheckResult(Allowed=True)
+    
+    def ValidateInventory(self, Sheet: CharacterSheet) -> list[str]:
+        Errors: list[str] = []
+
+        BackpackCount = len(Sheet.Inventory.BackpackItems)
+        MaxBackpackCount = self.InventoryRules.MaxBackpackItems
+        if BackpackCount > MaxBackpackCount:
+            Errors.append(
+                f"Backpack item limit exceeded ({BackpackCount}/{MaxBackpackCount})."
+            )
+        
+        SpecialCount = len(Sheet.Inventory.SpecialItems)
+        MaxSpecialCount = self.InventoryRules.MaxSpecialItems
+        if SpecialCount > MaxSpecialCount:
+            Errors.append(
+                f"Special item limit exceeded ({SpecialCount}/{MaxSpecialCount})."
+            )
+        return Errors
+    
+    
 
 @dataclass(frozen=True)
 class CombatOutcome:

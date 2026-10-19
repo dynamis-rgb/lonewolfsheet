@@ -836,3 +836,9 @@ The `tests` folder currently covers several parts of the project:
 
 Current note:
 - `test_Cli.py` previously had an indentation issue during collection; if that file is still failing, it should be fixed separately from the runtime modules
+
+
+## How to run tests
+Installed pytest in your project’s .venv and ran the tests: 45 passed.
+To run them yourself in PowerShell:
+.\.venv\Scripts\python.exe -m pytest -q

@@ -50,6 +50,8 @@ class Inventory:
         Clean = Name.strip()
         if Clean in self.Weapons:
             self.Weapons.remove(Clean)
+            if self.EquippedWeapon == Clean:
+                self.EquippedWeapon = None
             return True
         return False
 
@@ -81,6 +83,8 @@ class Inventory:
         Clean = Name.strip()
         if Clean in self.SpecialItems:
             self.SpecialItems.remove(Clean)
+            if self.EquippedWeapon == Clean:
+                self.EquippedWeapon = None
             return True
         return False
     
@@ -99,11 +103,12 @@ class Inventory:
 
 
 
-    def ToDict(self) -> dict[str, list[str]]:
+    def ToDict(self) -> dict[str, Any]:
         return {
             "Weapons": list(self.Weapons),
             "BackpackItems": list(self.BackpackItems),
             "SpecialItems": list(self.SpecialItems),
+            "EquippedWeapon": self.EquippedWeapon,
         }
 
     @staticmethod
@@ -112,6 +117,7 @@ class Inventory:
             Weapons=list(Data.get("Weapons", [])),
             BackpackItems=list(Data.get("BackpackItems", [])),
             SpecialItems=list(Data.get("SpecialItems", [])),
+            EquippedWeapon=Data.get("EquippedWeapon"),
         )
     
 

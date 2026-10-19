@@ -15,7 +15,9 @@
   "Character": {
     "Name": "Lone Wolf",
     "KaiRank": "Initiate",
-    "KaiDisciplines": [],
+    "KaiDisciplines": [
+      "healing"
+    ],
     "CombatSkill": 18,
     "Endurance": {
       "Current": 26,

@@ -2,5 +2,503 @@
   "InventoryLimits": {
     "MaxBackpackItems": 8,
     "MaxSpecialItems": 12
+  },
+  "Items": {
+    "Meal": {
+      "Category": "backpack",
+      "SlotCost": 1,
+      "IsWeapon": false,
+      "WeaponTypes": [],
+      "IsConsumable": true,
+      "CombatSkillBonus": 0,
+      "EnduranceBonus": 0,
+      "RestoresEndurance": 0
+    },
+    "Laumspur-4": {
+      "Category": "backpack",
+      "SlotCost": 1,
+      "IsWeapon": false,
+      "WeaponTypes": [],
+      "IsConsumable": true,
+      "CombatSkillBonus": 0,
+      "EnduranceBonus": 0,
+      "RestoresEndurance": 4
+    },
+    "Dagger": {
+      "Category": "weapon",
+      "SlotCost": 0,
+      "IsWeapon": true,
+      "WeaponTypes": [
+        "Dagger"
+      ],
+      "IsConsumable": false,
+      "CombatSkillBonus": 0,
+      "EnduranceBonus": 0,
+      "RestoresEndurance": 0
+    },
+    "Spear": {
+      "Category": "weapon",
+      "SlotCost": 0,
+      "IsWeapon": true,
+      "WeaponTypes": [
+        "Spear"
+      ],
+      "IsConsumable": false,
+      "CombatSkillBonus": 0,
+      "EnduranceBonus": 0,
+      "RestoresEndurance": 0
+    },
+    "Mace": {
+      "Category": "weapon",
+      "SlotCost": 0,
+      "IsWeapon": true,
+      "WeaponTypes": [
+        "Mace"
+      ],
+      "IsConsumable": false,
+      "CombatSkillBonus": 0,
+      "EnduranceBonus": 0,
+      "RestoresEndurance": 0
+    },
+    "Short Sword": {
+      "Category": "weapon",
+      "SlotCost": 0,
+      "IsWeapon": true,
+      "WeaponTypes": [
+        "Short Sword"
+      ],
+      "IsConsumable": false,
+      "CombatSkillBonus": 0,
+      "EnduranceBonus": 0,
+      "RestoresEndurance": 0
+    },
+    "Warhammer": {
+      "Category": "weapon",
+      "SlotCost": 0,
+      "IsWeapon": true,
+      "WeaponTypes": [
+        "Warhammer"
+      ],
+      "IsConsumable": false,
+      "CombatSkillBonus": 0,
+      "EnduranceBonus": 0,
+      "RestoresEndurance": 0
+    },
+    "Sword": {
+      "Category": "weapon",
+      "SlotCost": 0,
+      "IsWeapon": true,
+      "WeaponTypes": [
+        "Sword"
+      ],
+      "IsConsumable": false,
+      "CombatSkillBonus": 0,
+      "EnduranceBonus": 0,
+      "RestoresEndurance": 0
+    },
+    "Axe": {
+      "Category": "weapon",
+      "SlotCost": 0,
+      "IsWeapon": true,
+      "WeaponTypes": [
+        "Axe"
+      ],
+      "IsConsumable": false,
+      "CombatSkillBonus": 0,
+      "EnduranceBonus": 0,
+      "RestoresEndurance": 0
+    },
+    "Quarterstaff": {
+      "Category": "weapon",
+      "SlotCost": 0,
+      "IsWeapon": true,
+      "WeaponTypes": [
+        "Quarterstaff"
+      ],
+      "IsConsumable": false,
+      "CombatSkillBonus": 0,
+      "EnduranceBonus": 0,
+      "RestoresEndurance": 0
+    },
+    "Broadsword": {
+      "Category": "weapon",
+      "SlotCost": 0,
+      "IsWeapon": true,
+      "WeaponTypes": [
+        "Broad Sword"
+      ],
+      "IsConsumable": false,
+      "CombatSkillBonus": 0,
+      "EnduranceBonus": 0,
+      "RestoresEndurance": 0
+    },
+    "Bow": {
+      "Category": "weapon",
+      "SlotCost": 0,
+      "IsWeapon": true,
+      "WeaponTypes": [
+        "Bow"
+      ],
+      "IsConsumable": false,
+      "CombatSkillBonus": 0,
+      "EnduranceBonus": 0,
+      "RestoresEndurance": 0
+    },
+    "Magic Spear": {
+      "Category": "special",
+      "SlotCost": 1,
+      "IsWeapon": true,
+      "WeaponTypes": [
+        "Spear"
+      ],
+      "IsConsumable": false,
+      "CombatSkillBonus": 0,
+      "EnduranceBonus": 0,
+      "RestoresEndurance": 0
+    },
+    "Sommerswerd, the Sun-sword": {
+      "Category": "special",
+      "SlotCost": 1,
+      "IsWeapon": true,
+      "WeaponTypes": [
+        "Sword",
+        "Short Sword",
+        "Broad Sword"
+      ],
+      "IsConsumable": false,
+      "CombatSkillBonus": 8,
+      "EnduranceBonus": 0,
+      "RestoresEndurance": 0
+    },
+    "Helmet": {
+      "Category": "special",
+      "SlotCost": 1,
+      "IsWeapon": false,
+      "WeaponTypes": [],
+      "IsConsumable": false,
+      "CombatSkillBonus": 0,
+      "EnduranceBonus": 2,
+      "RestoresEndurance": 0
+    },
+    "20 Gems": {
+      "Category": "special",
+      "SlotCost": 1,
+      "IsWeapon": false,
+      "WeaponTypes": [],
+      "IsConsumable": false,
+      "CombatSkillBonus": 0,
+      "EnduranceBonus": 0,
+      "RestoresEndurance": 0
+    },
+    "Chainmail Waistcoat": {
+      "Category": "special",
+      "SlotCost": 1,
+      "IsWeapon": false,
+      "WeaponTypes": [],
+      "IsConsumable": false,
+      "CombatSkillBonus": 0,
+      "EnduranceBonus": 4,
+      "RestoresEndurance": 0
+    },
+    "Documents": {
+      "Category": "special",
+      "SlotCost": 1,
+      "IsWeapon": false,
+      "WeaponTypes": [],
+      "IsConsumable": false,
+      "CombatSkillBonus": 0,
+      "EnduranceBonus": 0,
+      "RestoresEndurance": 0
+    },
+    "Red Pass": {
+      "Category": "special",
+      "SlotCost": 1,
+      "IsWeapon": false,
+      "WeaponTypes": [],
+      "IsConsumable": false,
+      "CombatSkillBonus": 0,
+      "EnduranceBonus": 0,
+      "RestoresEndurance": 0
+    },
+    "Seal of Hammerdal": {
+      "Category": "special",
+      "SlotCost": 1,
+      "IsWeapon": false,
+      "WeaponTypes": [],
+      "IsConsumable": false,
+      "CombatSkillBonus": 0,
+      "EnduranceBonus": 0,
+      "RestoresEndurance": 0
+    },
+    "Shield": {
+      "Category": "special",
+      "SlotCost": 1,
+      "IsWeapon": false,
+      "WeaponTypes": [],
+      "IsConsumable": false,
+      "CombatSkillBonus": 2,
+      "EnduranceBonus": 0,
+      "RestoresEndurance": 0
+    },
+    "Coach Ticket (to Port Bax)": {
+      "Category": "special",
+      "SlotCost": 1,
+      "IsWeapon": false,
+      "WeaponTypes": [],
+      "IsConsumable": false,
+      "CombatSkillBonus": 0,
+      "EnduranceBonus": 0,
+      "RestoresEndurance": 0
+    },
+    "White Pass": {
+      "Category": "special",
+      "SlotCost": 1,
+      "IsWeapon": false,
+      "WeaponTypes": [],
+      "IsConsumable": false,
+      "CombatSkillBonus": 0,
+      "EnduranceBonus": 0,
+      "RestoresEndurance": 0
+    },
+    "Crystal Star Pendant": {
+      "Category": "special",
+      "SlotCost": 0,
+      "IsWeapon": false,
+      "WeaponTypes": [],
+      "IsConsumable": false,
+      "CombatSkillBonus": 0,
+      "EnduranceBonus": 0,
+      "RestoresEndurance": 0
+    },
+    "Map of Sommerlund": {
+      "Category": "special",
+      "SlotCost": 0,
+      "IsWeapon": false,
+      "WeaponTypes": [],
+      "IsConsumable": false,
+      "CombatSkillBonus": 0,
+      "EnduranceBonus": 0,
+      "RestoresEndurance": 0
+    },
+    "Map of the Lastlands": {
+      "Category": "special",
+      "SlotCost": 0,
+      "IsWeapon": false,
+      "WeaponTypes": [],
+      "IsConsumable": false,
+      "CombatSkillBonus": 0,
+      "EnduranceBonus": 0,
+      "RestoresEndurance": 0
+    },
+    "password \"sunset\"": {
+      "Category": "special",
+      "SlotCost": 0,
+      "IsWeapon": false,
+      "WeaponTypes": [],
+      "IsConsumable": false,
+      "CombatSkillBonus": 0,
+      "EnduranceBonus": 0,
+      "RestoresEndurance": 0
+    },
+    "Golden Key": {
+      "Category": "backpack",
+      "SlotCost": 1,
+      "IsWeapon": false,
+      "WeaponTypes": [],
+      "IsConsumable": false,
+      "CombatSkillBonus": 0,
+      "EnduranceBonus": 0,
+      "RestoresEndurance": 0
+    },
+    "Healing Potion": {
+      "Category": "backpack",
+      "SlotCost": 1,
+      "IsWeapon": false,
+      "WeaponTypes": [],
+      "IsConsumable": true,
+      "CombatSkillBonus": 0,
+      "EnduranceBonus": 0,
+      "RestoresEndurance": 4
+    },
+    "Laumspur Meal": {
+      "Category": "backpack",
+      "SlotCost": 1,
+      "IsWeapon": false,
+      "WeaponTypes": [],
+      "IsConsumable": true,
+      "CombatSkillBonus": 0,
+      "EnduranceBonus": 0,
+      "RestoresEndurance": 4
+    },
+    "Message (in Giak language)": {
+      "Category": "backpack",
+      "SlotCost": 1,
+      "IsWeapon": false,
+      "WeaponTypes": [],
+      "IsConsumable": false,
+      "CombatSkillBonus": 0,
+      "EnduranceBonus": 0,
+      "RestoresEndurance": 0
+    },
+    "Potion of Alether": {
+      "Category": "backpack",
+      "SlotCost": 1,
+      "IsWeapon": false,
+      "WeaponTypes": [],
+      "IsConsumable": true,
+      "CombatSkillBonus": 2,
+      "EnduranceBonus": 0,
+      "RestoresEndurance": 0
+    },
+    "Scroll (in Giak language)": {
+      "Category": "backpack",
+      "SlotCost": 1,
+      "IsWeapon": false,
+      "WeaponTypes": [],
+      "IsConsumable": false,
+      "CombatSkillBonus": 0,
+      "EnduranceBonus": 0,
+      "RestoresEndurance": 0
+    },
+    "Silver Key": {
+      "Category": "backpack",
+      "SlotCost": 1,
+      "IsWeapon": false,
+      "WeaponTypes": [],
+      "IsConsumable": false,
+      "CombatSkillBonus": 0,
+      "EnduranceBonus": 0,
+      "RestoresEndurance": 0
+    },
+    "Tablet of Perfumed Soap": {
+      "Category": "backpack",
+      "SlotCost": 1,
+      "IsWeapon": false,
+      "WeaponTypes": [],
+      "IsConsumable": false,
+      "CombatSkillBonus": 0,
+      "EnduranceBonus": 0,
+      "RestoresEndurance": 0
+    },
+    "Tinderbox": {
+      "Category": "backpack",
+      "SlotCost": 1,
+      "IsWeapon": false,
+      "WeaponTypes": [],
+      "IsConsumable": false,
+      "CombatSkillBonus": 0,
+      "EnduranceBonus": 0,
+      "RestoresEndurance": 0
+    },
+    "Torch": {
+      "Category": "backpack",
+      "SlotCost": 1,
+      "IsWeapon": false,
+      "WeaponTypes": [],
+      "IsConsumable": false,
+      "CombatSkillBonus": 0,
+      "EnduranceBonus": 0,
+      "RestoresEndurance": 0
+    },
+    "Vordak Gem": {
+      "Category": "backpack",
+      "SlotCost": 1,
+      "IsWeapon": false,
+      "WeaponTypes": [],
+      "IsConsumable": false,
+      "CombatSkillBonus": 0,
+      "EnduranceBonus": 0,
+      "RestoresEndurance": 0
+    },
+    "Blanket": {
+      "Category": "backpack",
+      "SlotCost": 1,
+      "IsWeapon": false,
+      "WeaponTypes": [],
+      "IsConsumable": false,
+      "CombatSkillBonus": 0,
+      "EnduranceBonus": 0,
+      "RestoresEndurance": 0
+    },
+    "Fur Blanket": {
+      "Category": "backpack",
+      "SlotCost": 1,
+      "IsWeapon": false,
+      "WeaponTypes": [],
+      "IsConsumable": false,
+      "CombatSkillBonus": 0,
+      "EnduranceBonus": 0,
+      "RestoresEndurance": 0
+    },
+    "Gold Ring": {
+      "Category": "backpack",
+      "SlotCost": 1,
+      "IsWeapon": false,
+      "WeaponTypes": [],
+      "IsConsumable": false,
+      "CombatSkillBonus": 0,
+      "EnduranceBonus": 0,
+      "RestoresEndurance": 0
+    },
+    "Meal of Laumspur": {
+      "Category": "backpack",
+      "SlotCost": 1,
+      "IsWeapon": false,
+      "WeaponTypes": [],
+      "IsConsumable": true,
+      "CombatSkillBonus": 0,
+      "EnduranceBonus": 0,
+      "RestoresEndurance": 4
+    },
+    "Potent Laumspur Potion": {
+      "Category": "backpack",
+      "SlotCost": 1,
+      "IsWeapon": false,
+      "WeaponTypes": [],
+      "IsConsumable": true,
+      "CombatSkillBonus": 0,
+      "EnduranceBonus": 0,
+      "RestoresEndurance": 0
+    },
+    "Potion of Orange Liquid": {
+      "Category": "backpack",
+      "SlotCost": 1,
+      "IsWeapon": false,
+      "WeaponTypes": [],
+      "IsConsumable": true,
+      "CombatSkillBonus": 0,
+      "EnduranceBonus": 0,
+      "RestoresEndurance": 0
+    },
+    "Rope-1": {
+      "Category": "backpack",
+      "SlotCost": 1,
+      "IsWeapon": false,
+      "WeaponTypes": [],
+      "IsConsumable": false,
+      "CombatSkillBonus": 0,
+      "EnduranceBonus": 0,
+      "RestoresEndurance": 0
+    },
+    "Rope-2": {
+      "Category": "backpack",
+      "SlotCost": 2,
+      "IsWeapon": false,
+      "WeaponTypes": [],
+      "IsConsumable": false,
+      "CombatSkillBonus": 0,
+      "EnduranceBonus": 0,
+      "RestoresEndurance": 0
+    },
+    "Small Healing Potion": {
+      "Category": "backpack",
+      "SlotCost": 1,
+      "IsWeapon": false,
+      "WeaponTypes": [],
+      "IsConsumable": true,
+      "CombatSkillBonus": 0,
+      "EnduranceBonus": 0,
+      "RestoresEndurance": 3
+    }
   }
 }

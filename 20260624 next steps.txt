@@ -1,0 +1,49 @@
+**Next Actions**
+
+1. Define the item catalog schema in `configs/defaultRules.json`.
+   Add an `Items` section with fields like `Category`, `SlotCost`, `IsWeapon`, `IsConsumable`, `CombatSkillBonus`, and `EnduranceBonus`. This is the foundation for every next step.
+d
+2. Extend [modules/AppConfig.py](/C:/Users/loren/lbcode/vscode%20test/LoneWolfSheet/modules/AppConfig.py) to load typed item definitions.
+   Keep this alongside `LoadInventoryRules()`. You want a real in-memory catalog, not raw dict lookups all over the code.
+
+3. Add equipped-weapon state to [modules/DomainModels.py](/C:/Users/loren/lbcode/vscode%20test/LoneWolfSheet/modules/DomainModels.py).
+   Add `EquippedWeapon`, persist it in `ToDict()` / `FromDict()`, and clear it automatically if the owned item is removed.
+
+4. Build item lookup and resolution helpers in [modules/RuleBooks1to5.py](/C:/Users/loren/lbcode/vscode%20test/LoneWolfSheet/modules/RuleBooks1to5.py).
+   Support:
+   - exact case-insensitive match
+   - unique prefix/substring match
+   - ambiguous-match result with candidate list
+
+5. Add CLI support for ambiguous item selection by number in [modules/Cli.py](/C:/Users/loren/lbcode/vscode%20test/LoneWolfSheet/modules/Cli.py).
+   This is the UX layer on top of the resolver. If multiple matches exist, show numbered options and let the user choose.
+
+6. Make `add-weapon`, `add-backpack`, and `add-special` catalog-driven.
+   Validate category, use slot/rules checks, and reject mismatches like trying to add a special item as a backpack item.
+
+7. Change backpack validation from item-count based to slot-cost based.
+   Once `SlotCost` exists, capacity should be total slots used, not number of entries.
+
+8. Add `equip-weapon` and `unequip-weapon` commands.
+   This is required before weapon bonuses can be applied correctly, especially for weapon-like special items such as `Sommerswerd`.
+
+9. Add persistent combat-modifier resolution in [modules/RuleBooks1to5.py](/C:/Users/loren/lbcode/vscode%20test/LoneWolfSheet/modules/RuleBooks1to5.py).
+   Compute bonuses from:
+   - `EquippedWeapon`
+   - passive owned special items
+
+10. Switch combat ratio calculation in [modules/PlaySession.py](/C:/Users/loren/lbcode/vscode%20test/LoneWolfSheet/modules/PlaySession.py) to use effective CS instead of base CS.
+
+11. Add temporary combat modifiers in `PlaySession`.
+   This covers potions, toggled Mindblast, and other stackable fight/round effects.
+
+12. Add tests at each layer before moving on.
+   Priority test areas:
+   - item catalog loading
+   - item name resolution and ambiguity handling
+   - equipped-weapon persistence
+   - slot-cost backpack validation
+   - effective CS calculation
+   - temporary modifier application/clearing
+
+If you want the best stopping point for today, stop after item catalog schema + loader design. That locks the data model before more behavior gets built on top of the current name-only system.

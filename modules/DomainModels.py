@@ -32,6 +32,10 @@ class Inventory:
     Weapons: list[str] = field(default_factory=list)
     BackpackItems: list[str] = field(default_factory=list)
     SpecialItems: list[str] = field(default_factory=list)
+    
+    EquippedWeapon: str | None = None
+    EquippedSpecialItems: list[str] = field(default_factory=list)
+
 
     def AddWeapon(self, Name: str) -> bool:
         Clean = Name.strip()
@@ -79,6 +83,21 @@ class Inventory:
             self.SpecialItems.remove(Clean)
             return True
         return False
+    
+    def EquipWeapon(self, Name: str) -> bool:
+        Clean = Name.strip()
+        if not Clean or Clean not in self.Weapons or self.EquippedWeapon == Clean:
+            return False
+        self.EquippedWeapon = Clean
+        return True
+
+    def UnequipWeapon(self) -> bool:
+        if self.EquippedWeapon is None:
+            return False
+        self.EquippedWeapon = None
+        return True
+
+
 
     def ToDict(self) -> dict[str, list[str]]:
         return {
@@ -94,6 +113,8 @@ class Inventory:
             BackpackItems=list(Data.get("BackpackItems", [])),
             SpecialItems=list(Data.get("SpecialItems", [])),
         )
+    
+
 
 
 @dataclass

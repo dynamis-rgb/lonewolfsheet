@@ -4,9 +4,10 @@ import random
 from dataclasses import dataclass, field
 from pathlib import Path
 
+from modules.AppConfig import LoadInventoryRules
 from modules.DomainModels import CharacterSheet, Endurance
 from modules.JsonRepository import JsonRepository
-from modules.RuleBooks1to5 import CombatResultsTable
+from modules.RuleBooks1to5 import CombatResultsTable, RuleBooks1to5
 
 
 @dataclass
@@ -23,6 +24,7 @@ class PlaySession:
     CtrTable: CombatResultsTable
     Fight: FightState | None = None
     Rng: random.Random = field(default_factory=random.Random)
+    Rules: RuleBooks1to5 = field(default_factory=lambda: RuleBooks1to5(LoadInventoryRules()))
 
     @staticmethod
     def CreateOrLoad(Repo: JsonRepository, SavePath: Path) -> PlaySession:
@@ -53,10 +55,14 @@ class PlaySession:
     def RollRandomNumber(self) -> int:
         return self.Rng.randint(0, 9)
 
+    def GetEffectiveCombatSkill(self) -> int:
+        Modifiers = self.Rules.ResolveCombatModifiers(self.Sheet)
+        return self.Sheet.CombatSkill + Modifiers.CombatSkillBonus
+
     def GetCombatRatio(self) -> int:
         if self.Fight is None:
             raise ValueError("No active fight.")
-        return self.Sheet.CombatSkill - self.Fight.EnemyCombatSkill
+        return self.GetEffectiveCombatSkill() - self.Fight.EnemyCombatSkill
 
     def StartFight(self, EnemyCombatSkill: int, EnemyEndurancePoints: int) -> str:
         self.Fight = FightState(
@@ -71,7 +77,7 @@ class PlaySession:
 
         return (
             f"Fight Started.\n"
-            f"Your CS: {self.Sheet.CombatSkill} | "
+            f"Your CS: {self.GetEffectiveCombatSkill()} | "
             f"Enemy CS: {self.Fight.EnemyCombatSkill} | "
             f"Combat Ratio: {Ratio}\n"
             f"Enemy EP: {self.Fight.EnemyEndurance.Current}/{self.Fight.EnemyEndurance.Max}"

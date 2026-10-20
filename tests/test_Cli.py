@@ -28,6 +28,70 @@ def test_cli_play_add_backpack(tmp_path, monkeypatch, capsys, initial_count):
     assert ("Backpack item added." in output) == (initial_count < 8)
 
 
+@pytest.mark.parametrize(
+    "commands,items,expected,message",
+    [
+        (["add-backpack rope", "2"], [], ["Rope-2"], "2. Rope-2"),
+        (["add-backpack rope", "abc", "-1", "99", "1"], [], ["Rope-1"], "Enter a number"),
+        (["add-backpack rope", "0"], [], [], "selection cancelled"),
+        (["add-backpack rope", ""], [], [], "selection cancelled"),
+        (["add-backpack nonexistent"], [], [], "No matching item"),
+        (["add-backpack MEAL"], [], ["Meal"], "Backpack item added"),
+        (["add-backpack perfumed"], [], ["Tablet of Perfumed Soap"], "Backpack item added"),
+        (["add-backpack sword"], [], [], "No matching item"),
+        (["remove-backpack rope", "2"], ["Rope-1", "Rope-2"], ["Rope-1"], "2. Rope-2"),
+        (["remove-backpack MEAL"], ["meal", "meal"], ["meal"], "Backpack item removed"),
+        (["remove-backpack custom"], ["Custom Trinket"], [], "Backpack item removed"),
+        (["remove-backpack rope", "0"], ["Rope-1", "Rope-2"], ["Rope-1", "Rope-2"], "selection cancelled"),
+    ],
+)
+def test_cli_item_resolution(tmp_path, monkeypatch, capsys, commands, items, expected, message):
+    repo = JsonRepository()
+    save_path = tmp_path / "character.json"
+    sheet = CharacterSheet(
+        Name="Lone Wolf", CombatSkill=17, Endurance=Endurance(Current=22, Max=22)
+    )
+    sheet.Inventory.BackpackItems = items
+    repo.SaveCharacter(sheet, save_path)
+    inputs = iter([*commands, "quit", "no"])
+    monkeypatch.setattr(builtins, "input", lambda _prompt="": next(inputs))
+    assert CliApp(repo).Run(["play", str(save_path)]) == 0
+    assert repo.LoadCharacter(save_path).Inventory.BackpackItems == expected
+    output = capsys.readouterr().out
+    assert message in output
+    assert "Unknown command" not in output
+
+
+@pytest.mark.parametrize("interruption", [EOFError, KeyboardInterrupt])
+def test_cli_item_selection_interruption_cancels(monkeypatch, capsys, interruption):
+    def interrupt(_prompt):
+        raise interruption
+
+    monkeypatch.setattr(builtins, "input", interrupt)
+    assert CliApp(JsonRepository())._ChooseItem(("Rope-1", "Rope-2")) is None
+    assert "selection cancelled" in capsys.readouterr().out
+
+
+@pytest.mark.parametrize(
+    "command,choice,field,expected",
+    [
+        ("add-weapon sw", "2", "Weapons", "Sword"),
+        ("add-special map", "1", "SpecialItems", "Map of Sommerlund"),
+    ],
+)
+def test_cli_item_resolution_other_categories(tmp_path, monkeypatch, command, choice, field, expected):
+    repo = JsonRepository()
+    save_path = tmp_path / "character.json"
+    sheet = CharacterSheet(
+        Name="Lone Wolf", CombatSkill=17, Endurance=Endurance(Current=22, Max=22)
+    )
+    repo.SaveCharacter(sheet, save_path)
+    inputs = iter([command, choice, "quit", "no"])
+    monkeypatch.setattr(builtins, "input", lambda _prompt="": next(inputs))
+    assert CliApp(repo).Run(["play", str(save_path)]) == 0
+    assert getattr(repo.LoadCharacter(save_path).Inventory, field) == [expected]
+
+
 def _CreateCharacter(app: CliApp, tmp_path, monkeypatch, rolls: list[int], inputs: list[str]):
     file_path = tmp_path / "character.json"
     roll_iter = iter(rolls)

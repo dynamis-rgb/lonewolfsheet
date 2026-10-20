@@ -329,6 +329,32 @@ class CliApp:
                 continue
 
             # Inventory management (simple; no quoting support yet)
+            ItemCommands = {
+                "add-weapon": ("weapon", Session.Sheet.Inventory.Weapons),
+                "remove-weapon": ("weapon", Session.Sheet.Inventory.Weapons),
+                "add-backpack": ("backpack", Session.Sheet.Inventory.BackpackItems),
+                "remove-backpack": ("backpack", Session.Sheet.Inventory.BackpackItems),
+                "add-special": ("special", Session.Sheet.Inventory.SpecialItems),
+                "remove-special": ("special", Session.Sheet.Inventory.SpecialItems),
+            }
+            if Command in ItemCommands and Args:
+                Category, OwnedNames = ItemCommands[Command]
+                Query = " ".join(Args)
+                if Command.startswith("remove-"):
+                    # Retain saved spelling, including custom items from older saves.
+                    Names = list(dict.fromkeys(OwnedNames))
+                    Name = self._SelectOwnedItem(Query, Names)
+                else:
+                    Catalog = {
+                        Name: Item for Name, Item in Rules.ItemCatalog.items()
+                        if Item.Category == Category
+                    }
+                    ItemRules = RuleBooks1to5(Rules.InventoryRules, Catalog)
+                    Name = self._ResolveItemSelection(ItemRules, Query)
+                if Name is None:
+                    continue
+                Args = [Name]
+
             if Command == "add-weapon" and Args:
                 Name = " ".join(Args)
                 Added = Session.Sheet.Inventory.AddWeapon(Name)
@@ -394,6 +420,49 @@ class CliApp:
 
             print("Unknown command. Type 'help'.")
         return 0
+
+    def _ResolveItemSelection(self, Rules: RuleBooks1to5, Query: str) -> str | None:
+        Result = Rules.ResolveItem(Query)
+        if Result.Status == "found":
+            return Result.Name
+        if Result.Status == "not_found":
+            print(f"No matching item: {Query}")
+            return None
+        return self._ChooseItem(Result.Candidates)
+
+    def _SelectOwnedItem(self, Query: str, Names: list[str]) -> str | None:
+        # Resolve saved names, so old casing and custom item names remain removable.
+        Key = Query.strip().casefold()
+        Exact = [Name for Name in Names if Name.casefold() == Key]
+        Candidates = Exact or [Name for Name in Names if Name.casefold().startswith(Key)]
+        Candidates = Candidates or [Name for Name in Names if Key in Name.casefold()]
+        if len(Candidates) == 1:
+            return Candidates[0]
+        if Candidates:
+            return self._ChooseItem(tuple(sorted(Candidates, key=str.casefold)))
+        print(f"No matching owned item: {Query}")
+        return None
+
+    def _ChooseItem(self, Candidates: tuple[str, ...]) -> str | None:
+        print("Multiple items match:")
+        for Number, Name in enumerate(Candidates, start=1):
+            print(f"  {Number}. {Name}")
+        while True:
+            try:
+                Raw = input("Choose an item number (0 or Enter to cancel): ").strip()
+            except (EOFError, KeyboardInterrupt):
+                print("\nItem selection cancelled.")
+                return None
+            if Raw in ("", "0") or Raw.casefold() in ("cancel", "q"):
+                print("Item selection cancelled.")
+                return None
+            try:
+                Number = int(Raw)
+            except ValueError:
+                Number = -1
+            if 1 <= Number <= len(Candidates):
+                return Candidates[Number - 1]
+            print(f"Enter a number from 1 to {len(Candidates)}, or 0 to cancel.")
 
     def _PromptForRollChoice(self, Prompt: str, AllowedIndexes: set[int]) -> int:
         while True:

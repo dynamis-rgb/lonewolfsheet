@@ -7,6 +7,54 @@ from modules.DomainModels import CharacterSheet, Endurance
 from modules.JsonRepository import JsonRepository
 
 
+@pytest.mark.parametrize("category,field", [
+    ("weapon", "Weapons"), ("backpack", "BackpackItems"), ("special", "SpecialItems")
+])
+@pytest.mark.parametrize("empty", [False, True])
+def test_cli_remove_all(tmp_path, monkeypatch, capsys, category, field, empty):
+    repo = JsonRepository()
+    path = tmp_path / "character.json"
+    sheet = CharacterSheet("Lone Wolf", 17, Endurance(22, 22))
+    sheet.Inventory.Weapons = ["Sword", "Axe"]
+    sheet.Inventory.BackpackItems = ["Meal", "Meal", "Custom Trinket"]
+    sheet.Inventory.SpecialItems = ["Magic Spear", "Helmet"]
+    sheet.Inventory.EquippedWeapon = "Magic Spear" if category == "special" else "Sword"
+    if empty:
+        setattr(sheet.Inventory, field, [])
+        sheet.Inventory.EquippedWeapon = None
+    before = sheet.Inventory.ToDict()
+    repo.SaveCharacter(sheet, path)
+    inputs = iter([f"remove-{category} ALL", "quit", "no"])
+    monkeypatch.setattr(builtins, "input", lambda _prompt="": next(inputs))
+    assert CliApp(repo).Run(["play", str(path)]) == 0
+    loaded = repo.LoadCharacter(path).Inventory
+    assert getattr(loaded, field) == []
+    for other in ("Weapons", "BackpackItems", "SpecialItems"):
+        if other != field:
+            assert getattr(loaded, other) == before[other]
+    expected_weapon = before["EquippedWeapon"] if category == "backpack" else None
+    assert loaded.EquippedWeapon == expected_weapon
+    output = capsys.readouterr().out
+    assert f"Removed all {category} items ({len(before[field])})." in output
+    assert "No matching" not in output
+
+
+def test_cli_remove_all_weapons_preserves_equipped_special_weapon(tmp_path, monkeypatch):
+    repo = JsonRepository()
+    path = tmp_path / "character.json"
+    sheet = CharacterSheet("Lone Wolf", 17, Endurance(22, 22))
+    sheet.Inventory.Weapons = ["Sword"]
+    sheet.Inventory.SpecialItems = ["Magic Spear"]
+    sheet.Inventory.EquippedWeapon = "Magic Spear"
+    repo.SaveCharacter(sheet, path)
+    inputs = iter(["remove-weapon all", "quit", "no"])
+    monkeypatch.setattr(builtins, "input", lambda _prompt="": next(inputs))
+    assert CliApp(repo).Run(["play", str(path)]) == 0
+    loaded = repo.LoadCharacter(path).Inventory
+    assert loaded.Weapons == []
+    assert loaded.EquippedWeapon == "Magic Spear"
+
+
 @pytest.mark.parametrize(
     "command,backpack,special,weapons,field,expected,message",
     [

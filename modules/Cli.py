@@ -247,9 +247,9 @@ class CliApp:
                     "  heal <n> | damage <n>\n"
                     "  gold +<n> | gold -<n>\n"
                     "  inv\n"
-                    "  add-weapon <name> | remove-weapon <name>\n"
-                    "  add-backpack <name> | remove-backpack <name>\n"
-                    "  add-special <name> | remove-special <name>\n"
+                    "  add-weapon <name> | remove-weapon <name|all>\n"
+                    "  add-backpack <name> | remove-backpack <name|all>\n"
+                    "  add-special <name> | remove-special <name|all>\n"
                     "  fight <enemyCS> <enemyEP>\n"
                     "  roll\n"
                     "  round\n"
@@ -341,6 +341,20 @@ class CliApp:
                 Category, OwnedNames = ItemCommands[Command]
                 Query = " ".join(Args)
                 if Command.startswith("remove-"):
+                    if Query.casefold() == "all":
+                        Remove = {
+                            "weapon": Session.Sheet.Inventory.RemoveWeapon,
+                            "backpack": Session.Sheet.Inventory.RemoveBackpackItem,
+                            "special": Session.Sheet.Inventory.RemoveSpecialItem,
+                        }[Category]
+                        Count = len(OwnedNames)
+                        for OwnedName in list(OwnedNames):
+                            Remove(OwnedName)
+                        if Category == "special":
+                            Session.Sheet.Inventory.EquippedSpecialItems.clear()
+                        Session.Save()
+                        print(f"Removed all {Category} items ({Count}).")
+                        continue
                     # Retain saved spelling, including custom items from older saves.
                     Names = list(dict.fromkeys(OwnedNames))
                     Name = self._SelectOwnedItem(Query, Names)

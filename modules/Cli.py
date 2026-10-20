@@ -345,14 +345,14 @@ class CliApp:
                     Names = list(dict.fromkeys(OwnedNames))
                     Name = self._SelectOwnedItem(Query, Names)
                 else:
-                    Catalog = {
-                        Name: Item for Name, Item in Rules.ItemCatalog.items()
-                        if Item.Category == Category
-                    }
-                    ItemRules = RuleBooks1to5(Rules.InventoryRules, Catalog)
-                    Name = self._ResolveItemSelection(ItemRules, Query)
+                    Name = self._ResolveItemSelection(Rules, Query)
                 if Name is None:
                     continue
+                if Command.startswith("add-"):
+                    Check = Rules.CanAddItem(Session.Sheet, Name, Category)
+                    if not Check.Allowed:
+                        print(Check.Reason)
+                        continue
                 Args = [Name]
 
             if Command == "add-weapon" and Args:
@@ -371,13 +371,6 @@ class CliApp:
 
             if Command == "add-backpack" and Args:
                 Name = " ".join(Args)
-
-                Check  = Rules.CanAddBackpackItem(Session.Sheet)
-
-                if not Check.Allowed:
-                    print(Check.Reason)
-                    continue
-
                 Added = Session.Sheet.Inventory.AddBackpackItem(Name)
                 Session.Save()
                 print("Backpack item added." if Added else "Invalid item name.")
@@ -397,13 +390,6 @@ class CliApp:
 
             if Command == "add-special" and Args:
                 Name = " ".join(Args)
-
-                Check = Rules.CanAddSpecialItem(Session.Sheet)
-                if not Check.Allowed:
-                    print(Check.Reason)
-                    continue
-
-                
                 Added = Session.Sheet.Inventory.AddSpecialItem(Name)
                 Session.Save()
                 print("Special Item added." if Added else "Special item already present or invalid.")

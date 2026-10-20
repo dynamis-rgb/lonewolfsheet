@@ -80,26 +80,73 @@ class RuleBooks1to5:
             )
         return ItemResolutionResult(Status="not_found")
     
-    def CanAddBackpackItem(self, Sheet: CharacterSheet) -> InventoryCheckResult:
-        CurrentCount=len(Sheet.Inventory.BackpackItems)
+    def _SlotCount(self, Names: list[str]) -> int:
+        # Legacy custom items still occupy one slot until cataloged.
+        return sum(
+            Item.SlotCost if (Item := self.GetItemDefinition(Name)) is not None else 1
+            for Name in Names
+        )
+
+    def CanAddItem(self, Sheet: CharacterSheet, Name: str, Category: str) -> InventoryCheckResult:
+        Item = self.GetItemDefinition(Name)
+        if Item is None:
+            return InventoryCheckResult(False, f"Unknown catalog item: {Name}")
+        if Item.Category != Category:
+            return InventoryCheckResult(
+                False, f"{Name} is a {Item.Category} item; use add-{Item.Category}."
+            )
+        if Category == "weapon":
+            if not Item.IsWeapon:
+                return InventoryCheckResult(False, f"{Name} is not a weapon.")
+            Owned = Sheet.Inventory.Weapons
+        elif Category == "special":
+            Owned = Sheet.Inventory.SpecialItems
+        else:
+            Owned = Sheet.Inventory.BackpackItems
+        if Category != "backpack" and any(
+            Existing.strip().casefold() == Name.strip().casefold() for Existing in Owned
+        ):
+            return InventoryCheckResult(False, f"{Name} is already present.")
+        if Category == "backpack":
+            return self.CanAddBackpackItem(Sheet, Name)
+        if Category == "special":
+            return self.CanAddSpecialItem(Sheet, Name)
+        # No weapon-count limit is defined in InventoryRules.
+        return InventoryCheckResult(True)
+
+    def CanAddBackpackItem(
+        self, Sheet: CharacterSheet, Name: str | None = None
+    ) -> InventoryCheckResult:
+        Item = self.GetItemDefinition(Name) if Name is not None else None
+        if Name is not None and (Item is None or Item.Category != "backpack"):
+            return InventoryCheckResult(False, f"Not a catalog backpack item: {Name}")
+        SlotCost = Item.SlotCost if Item is not None else 1
+        CurrentCount = self._SlotCount(Sheet.Inventory.BackpackItems)
         MaxCount = self.InventoryRules.MaxBackpackItems
 
-        if CurrentCount >= MaxCount:
+        if CurrentCount + SlotCost > MaxCount:
             return InventoryCheckResult(
                 Allowed=False,
-                Reason=f"Backpack is full ({CurrentCount}/{MaxCount})."
+                Reason=(f"Backpack is full ({CurrentCount}/{MaxCount})." if CurrentCount >= MaxCount
+                        else f"Not enough backpack slots ({CurrentCount}/{MaxCount}; needs {SlotCost}).")
             )
         
         return InventoryCheckResult(Allowed=True)
     
-    def CanAddSpecialItem(self, Sheet: CharacterSheet) -> InventoryCheckResult:
-        CurrentCount = len(Sheet.Inventory.SpecialItems)
+    def CanAddSpecialItem(
+        self, Sheet: CharacterSheet, Name: str | None = None
+    ) -> InventoryCheckResult:
+        Item = self.GetItemDefinition(Name) if Name is not None else None
+        if Name is not None and (Item is None or Item.Category != "special"):
+            return InventoryCheckResult(False, f"Not a catalog special item: {Name}")
+        SlotCost = Item.SlotCost if Item is not None else 1
+        CurrentCount = self._SlotCount(Sheet.Inventory.SpecialItems)
         MaxCount = self.InventoryRules.MaxSpecialItems
 
-        if CurrentCount >= MaxCount:
+        if CurrentCount + SlotCost > MaxCount:
             return InventoryCheckResult(
                 Allowed=False,
-                Reason=f"Special item limit readched ({CurrentCount}/{MaxCount})."
+                Reason=f"Not enough special item slots ({CurrentCount}/{MaxCount}; needs {SlotCost})."
             )
         
         return InventoryCheckResult(Allowed=True)
@@ -107,14 +154,14 @@ class RuleBooks1to5:
     def ValidateInventory(self, Sheet: CharacterSheet) -> list[str]:
         Errors: list[str] = []
 
-        BackpackCount = len(Sheet.Inventory.BackpackItems)
+        BackpackCount = self._SlotCount(Sheet.Inventory.BackpackItems)
         MaxBackpackCount = self.InventoryRules.MaxBackpackItems
         if BackpackCount > MaxBackpackCount:
             Errors.append(
                 f"Backpack item limit exceeded ({BackpackCount}/{MaxBackpackCount})."
             )
         
-        SpecialCount = len(Sheet.Inventory.SpecialItems)
+        SpecialCount = self._SlotCount(Sheet.Inventory.SpecialItems)
         MaxSpecialCount = self.InventoryRules.MaxSpecialItems
         if SpecialCount > MaxSpecialCount:
             Errors.append(

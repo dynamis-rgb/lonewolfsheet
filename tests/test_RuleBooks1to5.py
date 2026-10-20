@@ -17,6 +17,21 @@ def _build_sheet(
     return sheet
 
 
+def test_slot_validation_uses_catalog_costs_and_legacy_fallback():
+    rules = RuleBooks1to5(InventoryRules(8, 12))
+    sheet = _build_sheet(backpack_items=["rope-2"] * 4)
+    assert rules.ValidateInventory(sheet) == []
+    assert not rules.CanAddBackpackItem(sheet, "Meal").Allowed
+    sheet.Inventory.BackpackItems.append("Legacy Item")
+    assert rules.ValidateInventory(sheet) == ["Backpack item limit exceeded (9/8)."]
+    sheet.Inventory.SpecialItems = ["Map of Sommerlund", "Helmet"]
+    rules = RuleBooks1to5(InventoryRules(8, 1))
+    assert rules.CanAddSpecialItem(sheet, "Crystal Star Pendant").Allowed
+    assert not rules.CanAddSpecialItem(sheet, "Shield").Allowed
+    assert not rules.CanAddItem(sheet, "Magic Spear", "weapon").Allowed
+    assert not rules.CanAddItem(sheet, "Unknown", "backpack").Allowed
+
+
 def test_RuleBooks1to5_CanAddBackpackItem_AllowsWhenUnderLimit():
     rules = RuleBooks1to5(InventoryRules(MaxBackpackItems=8, MaxSpecialItems=12))
     sheet = _build_sheet(backpack_items=["Meal"] * 7)

@@ -7,6 +7,42 @@ from modules.DomainModels import CharacterSheet, Endurance
 from modules.JsonRepository import JsonRepository
 
 
+@pytest.mark.parametrize(
+    "command,backpack,special,weapons,field,expected,message",
+    [
+        ("add-backpack Helmet", [], [], [], "BackpackItems", [], "use add-special"),
+        ("add-weapon Magic Spear", [], [], [], "Weapons", [], "use add-special"),
+        ("add-special Meal", [], [], [], "SpecialItems", [], "use add-backpack"),
+        ("add-weapon mystery", [], [], [], "Weapons", [], "No matching item"),
+        ("add-backpack Rope-2", ["Meal"] * 7, [], [], "BackpackItems", ["Meal"] * 7, "needs 2"),
+        ("add-backpack Rope-2", ["Meal"] * 6, [], [], "BackpackItems", ["Meal"] * 6 + ["Rope-2"], "Backpack item added"),
+        ("add-backpack Meal", ["Rope-2"] * 4, [], [], "BackpackItems", ["Rope-2"] * 4, "Backpack is full"),
+        ("add-special Helmet", [], ["Custom"] * 12, [], "SpecialItems", ["Custom"] * 12, "needs 1"),
+        ("add-special Map of Sommerlund", [], ["Custom"] * 12, [], "SpecialItems", ["Custom"] * 12 + ["Map of Sommerlund"], "Special Item added"),
+        ("add-weapon SWORD", [], [], ["sword"], "Weapons", ["sword"], "already present"),
+        ("add-special HELMET", [], ["helmet"], [], "SpecialItems", ["helmet"], "already present"),
+    ],
+)
+def test_cli_catalog_add_rules(
+    tmp_path, monkeypatch, capsys, command, backpack, special, weapons, field, expected, message
+):
+    repo = JsonRepository()
+    path = tmp_path / "character.json"
+    sheet = CharacterSheet("Lone Wolf", 17, Endurance(22, 22))
+    sheet.Inventory.BackpackItems = backpack
+    sheet.Inventory.SpecialItems = special
+    sheet.Inventory.Weapons = weapons
+    repo.SaveCharacter(sheet, path)
+    original = path.read_bytes()
+    inputs = iter([command, "quit", "no"])
+    monkeypatch.setattr(builtins, "input", lambda _prompt="": next(inputs))
+    assert CliApp(repo).Run(["play", str(path)]) == 0
+    assert message in capsys.readouterr().out
+    assert getattr(repo.LoadCharacter(path).Inventory, field) == expected
+    if "added" not in message:
+        assert path.read_bytes() == original
+
+
 @pytest.mark.parametrize("initial_count", [0, 8])
 def test_cli_play_add_backpack(tmp_path, monkeypatch, capsys, initial_count):
     repo = JsonRepository()
@@ -38,7 +74,7 @@ def test_cli_play_add_backpack(tmp_path, monkeypatch, capsys, initial_count):
         (["add-backpack nonexistent"], [], [], "No matching item"),
         (["add-backpack MEAL"], [], ["Meal"], "Backpack item added"),
         (["add-backpack perfumed"], [], ["Tablet of Perfumed Soap"], "Backpack item added"),
-        (["add-backpack sword"], [], [], "No matching item"),
+        (["add-backpack sword"], [], [], "use add-weapon"),
         (["remove-backpack rope", "2"], ["Rope-1", "Rope-2"], ["Rope-1"], "2. Rope-2"),
         (["remove-backpack MEAL"], ["meal", "meal"], ["meal"], "Backpack item removed"),
         (["remove-backpack custom"], ["Custom Trinket"], [], "Backpack item removed"),

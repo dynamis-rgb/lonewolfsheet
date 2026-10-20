@@ -24,6 +24,20 @@ class ItemResolutionResult:
     Candidates: tuple[str, ...] = ()
 
 
+@dataclass(frozen=True)
+class ItemCombatModifier:
+    Name: str
+    CombatSkillBonus: int
+    EnduranceBonus: int
+
+
+@dataclass(frozen=True)
+class CombatModifiers:
+    CombatSkillBonus: int = 0
+    EnduranceBonus: int = 0
+    Sources: tuple[ItemCombatModifier, ...] = ()
+
+
 class RuleBooks1to5:
     def __init__(
         self,
@@ -45,6 +59,52 @@ class RuleBooks1to5:
         """Look up a full item name, ignoring case and surrounding whitespace."""
         CanonicalName = self._ItemNames.get(Name.strip().casefold())
         return self.ItemCatalog[CanonicalName] if CanonicalName is not None else None
+
+    def ResolveCombatModifiers(self, Sheet: CharacterSheet) -> CombatModifiers:
+        """Derive persistent item bonuses without changing base character stats.
+
+        Weapons contribute only while equipped and owned in their catalog category.
+        Non-consumable, non-weapon special items contribute passively while owned.
+        Unknown legacy items contribute no bonuses; duplicate special names count once.
+        Consumable effects and healing are handled separately from persistent bonuses.
+        """
+        Inventory = Sheet.Inventory
+        Sources: list[ItemCombatModifier] = []
+
+        def AddSource(Name: str, Item: ItemDefinition) -> None:
+            if Item.CombatSkillBonus or Item.EnduranceBonus:
+                CanonicalName = self._ItemNames[Name.strip().casefold()]
+                Sources.append(ItemCombatModifier(
+                    CanonicalName, Item.CombatSkillBonus, Item.EnduranceBonus
+                ))
+
+        if Inventory.EquippedWeapon:
+            Name = Inventory.EquippedWeapon
+            Item = self.GetItemDefinition(Name)
+            if Item is not None and Item.IsWeapon and not Item.IsConsumable:
+                Owned = (
+                    Inventory.Weapons if Item.Category == "weapon"
+                    else Inventory.SpecialItems if Item.Category == "special" else []
+                )
+                if any(Other.strip().casefold() == Name.strip().casefold() for Other in Owned):
+                    AddSource(Name, Item)
+
+        Seen: set[str] = set()
+        for Name in Inventory.SpecialItems:
+            Key = Name.strip().casefold()
+            if Key in Seen:
+                continue
+            Seen.add(Key)
+            Item = self.GetItemDefinition(Name)
+            if (Item is not None and Item.Category == "special"
+                    and not Item.IsWeapon and not Item.IsConsumable):
+                AddSource(Name, Item)
+
+        return CombatModifiers(
+            CombatSkillBonus=sum(Source.CombatSkillBonus for Source in Sources),
+            EnduranceBonus=sum(Source.EnduranceBonus for Source in Sources),
+            Sources=tuple(Sources),
+        )
 
     def ResolveItem(self, Query: str) -> ItemResolutionResult:
         """Resolve exact names first, then prefixes, then substrings.

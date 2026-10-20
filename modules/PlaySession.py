@@ -16,6 +16,13 @@ class FightState:
     EnemyEndurance: Endurance
 
 
+@dataclass(frozen=True)
+class TemporaryCombatModifier:
+    Source: str
+    CombatSkillBonus: int
+    RemainingRounds: int | None = None  # None means until this fight ends.
+
+
 @dataclass
 class PlaySession:
     Repo: JsonRepository
@@ -25,6 +32,99 @@ class PlaySession:
     Fight: FightState | None = None
     Rng: random.Random = field(default_factory=random.Random)
     Rules: RuleBooks1to5 = field(default_factory=lambda: RuleBooks1to5(LoadInventoryRules()))
+    TemporaryModifiers: list[TemporaryCombatModifier] = field(default_factory=list)
+    MindblastEnabled: bool = False
+
+    def AddTemporaryCombatModifier(
+        self, Source: str, CombatSkillBonus: int, Rounds: int | None = None
+    ) -> TemporaryCombatModifier:
+        """Stack an effect for this fight, or for the next Rounds applied rounds."""
+        if self.Fight is None:
+            raise ValueError("No active fight.")
+        if not isinstance(Source, str) or not Source.strip():
+            raise ValueError("Modifier source must be a nonempty string.")
+        if isinstance(CombatSkillBonus, bool) or not isinstance(CombatSkillBonus, int):
+            raise TypeError("CombatSkillBonus must be an integer.")
+        if Rounds is not None:
+            if isinstance(Rounds, bool) or not isinstance(Rounds, int):
+                raise TypeError("Rounds must be an integer or None.")
+            if Rounds <= 0:
+                raise ValueError("Rounds must be greater than zero.")
+        Modifier = TemporaryCombatModifier(Source.strip(), CombatSkillBonus, Rounds)
+        self.TemporaryModifiers.append(Modifier)
+        return Modifier
+
+    def RemoveTemporaryCombatModifiers(self, Source: str) -> int:
+        """Remove every stacked effect from the named source."""
+        Before = len(self.TemporaryModifiers)
+        self.TemporaryModifiers[:] = [
+            Modifier for Modifier in self.TemporaryModifiers
+            if Modifier.Source.casefold() != Source.strip().casefold()
+        ]
+        return Before - len(self.TemporaryModifiers)
+
+    def ClearTemporaryCombatModifiers(self) -> None:
+        self.TemporaryModifiers.clear()
+        self.MindblastEnabled = False
+
+    def SetMindblast(self, Enabled: bool) -> None:
+        if not isinstance(Enabled, bool):
+            raise TypeError("Enabled must be a boolean.")
+        if Enabled:
+            if self.Fight is None:
+                raise ValueError("No active fight.")
+            if not any(Name.strip().casefold() == "mindblast" for Name in self.Sheet.KaiDisciplines):
+                raise ValueError("Mindblast discipline is required.")
+        self.MindblastEnabled = Enabled
+
+    def GetTemporaryCombatSkillBonus(self) -> int:
+        if self.Fight is None:
+            return 0
+        MindblastKnown = any(
+            Name.strip().casefold() == "mindblast" for Name in self.Sheet.KaiDisciplines
+        )
+        return sum(Modifier.CombatSkillBonus for Modifier in self.TemporaryModifiers) + (
+            2 if self.MindblastEnabled and MindblastKnown else 0
+        )
+
+    def UseCombatPotion(self, Name: str) -> TemporaryCombatModifier:
+        """Consume one catalog potion for its CS bonus for the current fight.
+
+        Healing and temporary maximum-endurance effects require separate handling.
+        Effects live only in this session; the consumed inventory item is saved.
+        """
+        if self.Fight is None:
+            raise ValueError("No active fight.")
+        Item = self.Rules.GetItemDefinition(Name)
+        if (Item is None or not Item.IsConsumable or not Item.CombatSkillBonus
+                or Item.EnduranceBonus or Item.RestoresEndurance):
+            raise ValueError("Item must be a catalog consumable with only a combat skill effect.")
+        Inventory = self.Sheet.Inventory
+        if Item.Category == "backpack":
+            Owned, Remove = Inventory.BackpackItems, Inventory.RemoveBackpackItem
+        elif Item.Category == "special":
+            Owned, Remove = Inventory.SpecialItems, Inventory.RemoveSpecialItem
+        else:
+            raise ValueError("Combat potion must be a backpack or special item.")
+        OwnedName = next(
+            (Other for Other in Owned if Other.strip().casefold() == Name.strip().casefold()), None
+        )
+        if OwnedName is None:
+            raise ValueError(f"Item is not owned: {Name}")
+        CanonicalName = self.Rules.ResolveItem(Name).Name
+        Modifier = self.AddTemporaryCombatModifier(CanonicalName, Item.CombatSkillBonus)
+        Remove(OwnedName)
+        self.Save()
+        return Modifier
+
+    def _AdvanceTemporaryModifiers(self) -> None:
+        self.TemporaryModifiers[:] = [
+            TemporaryCombatModifier(
+                Modifier.Source, Modifier.CombatSkillBonus, Modifier.RemainingRounds - 1
+            ) if Modifier.RemainingRounds is not None else Modifier
+            for Modifier in self.TemporaryModifiers
+            if Modifier.RemainingRounds is None or Modifier.RemainingRounds > 1
+        ]
 
     @staticmethod
     def CreateOrLoad(Repo: JsonRepository, SavePath: Path) -> PlaySession:
@@ -57,7 +157,8 @@ class PlaySession:
 
     def GetEffectiveCombatSkill(self) -> int:
         Modifiers = self.Rules.ResolveCombatModifiers(self.Sheet)
-        return self.Sheet.CombatSkill + Modifiers.CombatSkillBonus
+        return (self.Sheet.CombatSkill + Modifiers.CombatSkillBonus
+                + self.GetTemporaryCombatSkillBonus())
 
     def GetCombatRatio(self) -> int:
         if self.Fight is None:
@@ -65,6 +166,7 @@ class PlaySession:
         return self.GetEffectiveCombatSkill() - self.Fight.EnemyCombatSkill
 
     def StartFight(self, EnemyCombatSkill: int, EnemyEndurancePoints: int) -> str:
+        self.ClearTemporaryCombatModifiers()
         self.Fight = FightState(
             EnemyCombatSkill=int(EnemyCombatSkill),
             EnemyEndurance=Endurance(
@@ -95,6 +197,7 @@ class PlaySession:
 
         AfterYou = self.Sheet.Endurance.Current
         AfterEnemy = self.Fight.EnemyEndurance.Current
+        self._AdvanceTemporaryModifiers()
 
         OutcomeLines = [
             f"Round applied. You: {BeforeYou} -> {AfterYou} | "
@@ -107,6 +210,10 @@ class PlaySession:
 
         if AfterYou == 0:
             OutcomeLines.append("You are at 0 endurance. Your life and adventure end here!")
+            self.Fight = None
+
+        if self.Fight is None:
+            self.ClearTemporaryCombatModifiers()
 
         self.Save()
         return "\n".join(OutcomeLines)
@@ -135,6 +242,16 @@ class PlaySession:
         Lines.append(f"Book: {self.Sheet.CurrentBook}")
         Lines.append(f"Section: {self.Sheet.CurrentSection}")
         Lines.append(f"CS: {self.Sheet.CombatSkill}")
+        Lines.append(f"Effective CS: {self.GetEffectiveCombatSkill()}")
+        if self.Fight is not None:
+            Lines.append(f"Temporary CS bonus: {self.GetTemporaryCombatSkillBonus():+d}")
+            Lines.append(f"Mindblast: {'on' if self.MindblastEnabled else 'off'}")
+            for Modifier in self.TemporaryModifiers:
+                Duration = (
+                    "this fight" if Modifier.RemainingRounds is None
+                    else f"{Modifier.RemainingRounds} round(s)"
+                )
+                Lines.append(f"  {Modifier.Source}: {Modifier.CombatSkillBonus:+d} CS ({Duration})")
         Lines.append(f"EP: {self.Sheet.Endurance.Current}/{self.Sheet.Endurance.Max}")
         Lines.append(f"Gold: {self.Sheet.GoldCrowns}")
         Lines.append(

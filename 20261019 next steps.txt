@@ -1,0 +1,15 @@
+**Next Actions**
+Add a Disciplines catalog to defaultRules.json. Store canonical names such as Mindblast, with room for descriptions and book availability later.
+
+Load typed definitions in AppConfig.py. Add DisciplineDefinition and LoadDisciplineCatalog().
+
+Share the name-matching logic. Extract the current item matching into a reusable helper that supports exact case-insensitive matches, unique prefixes/substrings, and ambiguous candidates. Keep typed item and discipline results around that helper.
+
+Validate both discipline entry paths. Route interactive add-discipline and the standalone CLI command through the resolver before changing the character:
+- Mindblas → Mindblast
+- mind → numbered choices for Mindblast and Mindshield
+- Unknown names → reject without saving
+
+Store canonical names and prevent duplicates. Check duplicates case-insensitively. Keep existing saves readable; correcting older misspellings should be an explicit action.
+
+Test matching and command behavior. Include your Mindblas example, ambiguity, unknown names, duplicates, and cancellation.

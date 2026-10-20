@@ -7,6 +7,42 @@ from modules.DomainModels import CharacterSheet, Endurance
 from modules.JsonRepository import JsonRepository
 
 
+@pytest.mark.parametrize(
+    "commands,expected,message",
+    [
+        (["equip-weapon sWoRd"], "Sword", "Weapon equipped: Sword"),
+        (["equip-weapon somm"], "Sommerswerd, the Sun-sword", "Weapon equipped: Sommerswerd"),
+        (["equip-weapon magic"], "Magic Spear", "Weapon equipped: Magic Spear"),
+        (["equip-weapon Sword", "equip-weapon somm"], "Sommerswerd, the Sun-sword", "Weapon equipped: Sommerswerd"),
+        (["equip-weapon helmet"], None, "not a catalog weapon"),
+        (["equip-weapon Bow"], None, "No matching owned item"),
+        (["equip-weapon sw", "1"], "Sword", "1. Sword"),
+        (["equip-weapon sw", "0"], None, "selection cancelled"),
+        (["equip-weapon Sword", "unequip-weapon"], None, "Weapon unequipped"),
+        (["unequip-weapon"], None, "No weapon is equipped"),
+        (["equip-weapon Sword", "equip-weapon sword"], "Sword", "already equipped"),
+        (["equip-weapon somm", "remove-special all"], None, "Removed all special"),
+        (["equip-weapon Sword", "remove-weapon Sword"], None, "Weapon removed"),
+        (["equip-weapon"], None, "Usage: equip-weapon"),
+        (["unequip-weapon Sword"], None, "Usage: unequip-weapon"),
+    ],
+)
+def test_cli_weapon_equipment(tmp_path, monkeypatch, capsys, commands, expected, message):
+    repo = JsonRepository()
+    path = tmp_path / "character.json"
+    sheet = CharacterSheet("Lone Wolf", 17, Endurance(22, 22))
+    sheet.Inventory.Weapons = ["Sword", "Swordfish"]
+    sheet.Inventory.SpecialItems = ["Sommerswerd, the Sun-sword", "Magic Spear", "Helmet"]
+    repo.SaveCharacter(sheet, path)
+    inputs = iter([*commands, "inv", "quit", "no"])
+    monkeypatch.setattr(builtins, "input", lambda _prompt="": next(inputs))
+    assert CliApp(repo).Run(["play", str(path)]) == 0
+    assert repo.LoadCharacter(path).Inventory.EquippedWeapon == expected
+    output = capsys.readouterr().out
+    assert message in output
+    assert f"Equipped weapon: {expected or '(none)'}" in output
+
+
 @pytest.mark.parametrize("category,field", [
     ("weapon", "Weapons"), ("backpack", "BackpackItems"), ("special", "SpecialItems")
 ])

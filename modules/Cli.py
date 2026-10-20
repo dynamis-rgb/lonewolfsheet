@@ -250,6 +250,7 @@ class CliApp:
                     "  add-weapon <name> | remove-weapon <name|all>\n"
                     "  add-backpack <name> | remove-backpack <name|all>\n"
                     "  add-special <name> | remove-special <name|all>\n"
+                    "  equip-weapon <name> | unequip-weapon\n"
                     "  fight <enemyCS> <enemyEP>\n"
                     "  roll\n"
                     "  round\n"
@@ -324,8 +325,40 @@ class CliApp:
                 print(
                     f"Weapons: {Session.Sheet.Inventory.Weapons}\n"
                     f"Backpack: {Session.Sheet.Inventory.BackpackItems}\n"
-                    f"Special: {Session.Sheet.Inventory.SpecialItems}"
+                    f"Special: {Session.Sheet.Inventory.SpecialItems}\n"
+                    f"Equipped weapon: {Session.Sheet.Inventory.EquippedWeapon or '(none)'}"
                 )
+                continue
+
+            if Command == "equip-weapon":
+                if not Args:
+                    print("Usage: equip-weapon <name>")
+                    continue
+                Inventory = Session.Sheet.Inventory
+                Names = list(dict.fromkeys(Inventory.Weapons + Inventory.SpecialItems))
+                Name = self._SelectOwnedItem(" ".join(Args), Names)
+                if Name is None:
+                    continue
+                Definition = Rules.GetItemDefinition(Name)
+                if Definition is None or not Definition.IsWeapon:
+                    print(f"{Name} is not a catalog weapon.")
+                    continue
+                if Inventory.EquipWeapon(Name, Definition):
+                    Session.Save()
+                    print(f"Weapon equipped: {Name}")
+                else:
+                    print(f"{Name} is already equipped.")
+                continue
+
+            if Command == "unequip-weapon":
+                if Args:
+                    print("Usage: unequip-weapon")
+                    continue
+                if Session.Sheet.Inventory.UnequipWeapon():
+                    Session.Save()
+                    print("Weapon unequipped.")
+                else:
+                    print("No weapon is equipped.")
                 continue
 
             # Inventory management (simple; no quoting support yet)

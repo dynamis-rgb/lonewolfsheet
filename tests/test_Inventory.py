@@ -1,5 +1,20 @@
 from modules.DomainModels import Inventory
 
+from modules.AppConfig import LoadItemCatalog
+
+
+def test_Inventory_EquipSpecialWeapon_RequiresWeaponDefinitionAndOwnership():
+    catalog = LoadItemCatalog()
+    name = "Sommerswerd, the Sun-sword"
+    inv = Inventory(SpecialItems=[name, "Helmet"])
+    assert inv.EquipWeapon(name) is False
+    assert inv.EquipWeapon(name, catalog[name]) is True
+    assert inv.EquippedWeapon == name
+    assert inv.EquipWeapon("Helmet", catalog["Helmet"]) is False
+    assert inv.EquipWeapon("Sword", catalog["Sword"]) is False
+    assert inv.EquippedWeapon == name
+    assert Inventory.FromDict(inv.ToDict()).EquippedWeapon == name
+
 
 def test_Inventory_AddWeapon_Dedupes():
     Inv = Inventory()

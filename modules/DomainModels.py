@@ -3,6 +3,8 @@ from __future__ import annotations
 from dataclasses import dataclass, field
 from typing import Any
 
+from modules.AppConfig import ItemDefinition
+
 
 @dataclass
 class Endurance:
@@ -88,9 +90,15 @@ class Inventory:
             return True
         return False
     
-    def EquipWeapon(self, Name: str) -> bool:
+    def EquipWeapon(self, Name: str, Definition: ItemDefinition | None = None) -> bool:
         Clean = Name.strip()
-        if not Clean or Clean not in self.Weapons or self.EquippedWeapon == Clean:
+        OwnedWeapon = Clean in self.Weapons
+        OwnedSpecialWeapon = (
+            Clean in self.SpecialItems and Definition is not None and Definition.IsWeapon
+        )
+        if Definition is not None and not Definition.IsWeapon:
+            return False
+        if not Clean or not (OwnedWeapon or OwnedSpecialWeapon) or self.EquippedWeapon == Clean:
             return False
         self.EquippedWeapon = Clean
         return True

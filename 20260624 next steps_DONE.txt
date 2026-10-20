@@ -33,8 +33,7 @@ D
 10. Switch combat ratio calculation in [modules/PlaySession.py](/C:/Users/loren/lbcode/vscode%20test/LoneWolfSheet/modules/PlaySession.py) to use effective CS instead of base CS.
 D
 
-11. Add temporary combat modifiers in `PlaySession`.
-   This covers potions, toggled Mindblast, and other stackable fight/round effects.
+11. Add temporary combat modifiers in `PlaySession`.    This covers potions, toggled Mindblast, and other stackable fight/round effects.
 D
 12. Add tests at each layer before moving on.
    Priority test areas:

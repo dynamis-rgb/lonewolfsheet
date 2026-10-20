@@ -4,7 +4,63 @@ from pathlib import Path
 
 import pytest
 
-from modules.AppConfig import ItemDefinition, LoadInventoryRules, LoadItemCatalog
+from modules.AppConfig import (
+    DisciplineDefinition, ItemDefinition, LoadDisciplineCatalog, LoadInventoryRules, LoadItemCatalog,
+)
+
+
+def test_LoadDisciplineCatalog_TypedImmutableAndIndependentOfCwd(tmp_path, monkeypatch):
+    monkeypatch.chdir(tmp_path)
+    catalog = LoadDisciplineCatalog()
+    assert len(catalog) == 10
+    assert all(isinstance(value, DisciplineDefinition) for value in catalog.values())
+    assert catalog["Mindblast"].Description == ""
+    assert catalog["Mindblast"].AvailableBooks == (1, 2, 3, 4, 5)
+    with pytest.raises(TypeError):
+        catalog["New"] = catalog["Mindblast"]
+    with pytest.raises(FrozenInstanceError):
+        catalog["Mindblast"].Description = "Changed"
+
+
+@pytest.mark.parametrize("field,value,error", [
+    ("Description", None, TypeError),
+    ("Description", 1, TypeError),
+    ("AvailableBooks", "1", TypeError),
+    ("AvailableBooks", [True], TypeError),
+    ("AvailableBooks", [1.5], TypeError),
+    ("AvailableBooks", ["1"], TypeError),
+    ("AvailableBooks", [0], ValueError),
+    ("AvailableBooks", [-1], ValueError),
+    ("AvailableBooks", [1, 1], ValueError),
+])
+def test_LoadDisciplineCatalog_InvalidFields(monkeypatch, field, value, error):
+    raw = {"Description": "", "AvailableBooks": [1]}
+    raw[field] = value
+    monkeypatch.setattr(Path, "read_text", lambda *a, **kw: json.dumps({"Disciplines": {"Test": raw}}))
+    with pytest.raises(error, match=field):
+        LoadDisciplineCatalog()
+
+
+@pytest.mark.parametrize("disciplines,error", [
+    ([], TypeError),
+    ({" ": {}}, ValueError),
+    ({"Mindblast": []}, TypeError),
+    ({"Mindblast": {}, "MINDBLAST": {}}, KeyError),
+    ({"Mindblast": {"Description": "", "AvailableBooks": [1]},
+      "MINDBLAST": {"Description": "", "AvailableBooks": [1]}}, ValueError),
+])
+def test_LoadDisciplineCatalog_InvalidStructure(monkeypatch, disciplines, error):
+    monkeypatch.setattr(Path, "read_text", lambda *a, **kw: json.dumps({"Disciplines": disciplines}))
+    with pytest.raises(error):
+        LoadDisciplineCatalog()
+
+
+def test_LoadDisciplineCatalog_PreservesDescriptionsAndFutureBooks(monkeypatch):
+    raw = {"Description": "A discipline description.", "AvailableBooks": [1, 6, 12]}
+    monkeypatch.setattr(Path, "read_text", lambda *a, **kw: json.dumps({"Disciplines": {"Test": raw}}))
+    assert LoadDisciplineCatalog()["Test"] == DisciplineDefinition(
+        "A discipline description.", (1, 6, 12)
+    )
 
 
 def test_LoadItemCatalog_LoadsTypedDefinitionsFromAnyDirectory(tmp_path, monkeypatch):

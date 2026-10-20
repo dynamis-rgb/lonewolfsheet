@@ -42,6 +42,49 @@ class ItemDefinition:
     RestoresEndurance: int
 
 
+@dataclass(frozen=True)
+class DisciplineDefinition:
+    Description: str
+    AvailableBooks: tuple[int, ...]
+
+
+def LoadDisciplineCatalog() -> Mapping[str, DisciplineDefinition]:
+    """Load validated, immutable definitions keyed by canonical discipline name."""
+    config_path = Path(__file__).resolve().parent.parent / "configs" / "defaultRules.json"
+    data = json.loads(config_path.read_text(encoding="utf-8"))
+    disciplines = data["Disciplines"]
+    if not isinstance(disciplines, dict):
+        raise TypeError("Disciplines must be an object keyed by discipline name.")
+
+    catalog: dict[str, DisciplineDefinition] = {}
+    seen: set[str] = set()
+    for name, raw in disciplines.items():
+        if not isinstance(name, str) or not name.strip():
+            raise ValueError("Discipline names must be nonempty strings.")
+        normalized = name.strip().casefold()
+        if normalized in seen:
+            raise ValueError(f"Duplicate discipline name: {name!r}")
+        seen.add(normalized)
+        if not isinstance(raw, dict):
+            raise TypeError(f"Disciplines.{name} must be an object.")
+        description = raw["Description"]
+        if not isinstance(description, str):
+            raise TypeError(f"Disciplines.{name}.Description must be a string.")
+        books = raw["AvailableBooks"]
+        if not isinstance(books, list):
+            raise TypeError(f"Disciplines.{name}.AvailableBooks must be a list.")
+        for book in books:
+            validate_nonnegative_int(book, f"Disciplines.{name}.AvailableBooks")
+            if book == 0:
+                raise ValueError(f"Disciplines.{name}.AvailableBooks must contain positive book numbers.")
+        if len(books) != len(set(books)):
+            raise ValueError(f"Disciplines.{name}.AvailableBooks must not contain duplicates.")
+        catalog[name] = DisciplineDefinition(
+            Description=description, AvailableBooks=tuple(books)
+        )
+    return MappingProxyType(catalog)
+
+
 def validate_nonnegative_int(value: Any, field_name: str) -> int:
     # bool is a subclass of int in Python, so reject it explicitly.
     if isinstance(value, bool) or not isinstance(value, int):

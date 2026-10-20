@@ -16,18 +16,47 @@
     "Name": "Lone Wolf",
     "KaiRank": "Initiate",
     "KaiDisciplines": [
-      "healing"
+      "healing",
+      "Sixth Sense",
+      "Hunting",
+      "Animal Kinship",
+      "Mindshield"
     ],
     "CombatSkill": 18,
     "Endurance": {
       "Current": 26,
       "Max": 26
     },
-    "GoldCrowns": 0
+    "GoldCrowns": 35
   },
   "Inventory": {
-    "Weapons": [],
-    "BackpackItems": [],
-    "SpecialItems": []
+    "Weapons": [
+      "sword"
+    ],
+    "BackpackItems": [
+      "meal",
+      "meal",
+      "laumspur-4",
+      "rope",
+      "Meal",
+      "Meal",
+      "Meal",
+      "Meal"
+    ],
+    "SpecialItems": [
+      "\"Map of the Wildlands\"",
+      "Padded Leather Waistcoat",
+      "item",
+      "item1",
+      "item2",
+      "item3",
+      "item4",
+      "item5",
+      "item6",
+      "item7",
+      "item8",
+      "item9"
+    ],
+    "EquippedWeapon": null
   }
 }

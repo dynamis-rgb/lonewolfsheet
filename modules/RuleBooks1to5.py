@@ -3,8 +3,10 @@ from __future__ import annotations
 import json
 from dataclasses import dataclass
 from pathlib import Path
+from types import MappingProxyType
+from typing import Literal, Mapping
 
-from modules.AppConfig import InventoryRules
+from modules.AppConfig import InventoryRules, ItemDefinition, LoadItemCatalog
 from modules.DomainModels import CharacterSheet
 
 
@@ -13,9 +15,70 @@ class InventoryCheckResult:
     Allowed: bool
     Reason: str = ""
 
+
+@dataclass(frozen=True)
+class ItemResolutionResult:
+    Status: Literal["found", "not_found", "ambiguous"]
+    Name: str | None = None
+    Definition: ItemDefinition | None = None
+    Candidates: tuple[str, ...] = ()
+
+
 class RuleBooks1to5:
-    def __init__(self, InventoryRules: InventoryRules) -> None:
+    def __init__(
+        self,
+        InventoryRules: InventoryRules,
+        ItemCatalog: Mapping[str, ItemDefinition] | None = None,
+    ) -> None:
         self.InventoryRules = InventoryRules
+        self.ItemCatalog = MappingProxyType(
+            dict(LoadItemCatalog() if ItemCatalog is None else ItemCatalog)
+        )
+        self._ItemNames: dict[str, str] = {}
+        for Name in self.ItemCatalog:
+            Normalized = Name.strip().casefold()
+            if not Normalized or Normalized in self._ItemNames:
+                raise ValueError(f"Item catalog contains a blank or duplicate item name: {Name!r}")
+            self._ItemNames[Normalized] = Name
+
+    def GetItemDefinition(self, Name: str) -> ItemDefinition | None:
+        """Look up a full item name, ignoring case and surrounding whitespace."""
+        CanonicalName = self._ItemNames.get(Name.strip().casefold())
+        return self.ItemCatalog[CanonicalName] if CanonicalName is not None else None
+
+    def ResolveItem(self, Query: str) -> ItemResolutionResult:
+        """Resolve exact names first, then prefixes, then substrings.
+
+        An ambiguous prefix returns its candidates without trying substring matching.
+        Returned names always retain the catalog's canonical spelling.
+        """
+        Normalized = Query.strip().casefold()
+        if not Normalized:
+            return ItemResolutionResult(Status="not_found")
+
+        Exact = self._ItemNames.get(Normalized)
+        if Exact is not None:
+            return ItemResolutionResult(
+                Status="found", Name=Exact, Definition=self.ItemCatalog[Exact]
+            )
+
+        Candidates = [
+            Name for Key, Name in self._ItemNames.items() if Key.startswith(Normalized)
+        ]
+        if not Candidates:
+            Candidates = [
+                Name for Key, Name in self._ItemNames.items() if Normalized in Key
+            ]
+        if len(Candidates) == 1:
+            Name = Candidates[0]
+            return ItemResolutionResult(
+                Status="found", Name=Name, Definition=self.ItemCatalog[Name]
+            )
+        if Candidates:
+            return ItemResolutionResult(
+                Status="ambiguous", Candidates=tuple(sorted(Candidates, key=str.casefold))
+            )
+        return ItemResolutionResult(Status="not_found")
     
     def CanAddBackpackItem(self, Sheet: CharacterSheet) -> InventoryCheckResult:
         CurrentCount=len(Sheet.Inventory.BackpackItems)

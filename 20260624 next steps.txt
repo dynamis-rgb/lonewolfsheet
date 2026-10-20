@@ -3,12 +3,10 @@
 1. Define the item catalog schema in `configs/defaultRules.json`.
    Add an `Items` section with fields like `Category`, `SlotCost`, `IsWeapon`, `IsConsumable`, `CombatSkillBonus`, and `EnduranceBonus`. This is the foundation for every next step.
 d
-2. Extend [modules/AppConfig.py](/C:/Users/loren/lbcode/vscode%20test/LoneWolfSheet/modules/AppConfig.py) to load typed item definitions.
-   Keep this alongside `LoadInventoryRules()`. You want a real in-memory catalog, not raw dict lookups all over the code.
-
-3. Add equipped-weapon state to [modules/DomainModels.py](/C:/Users/loren/lbcode/vscode%20test/LoneWolfSheet/modules/DomainModels.py).
-   Add `EquippedWeapon`, persist it in `ToDict()` / `FromDict()`, and clear it automatically if the owned item is removed.
-
+2. Extend [modules/AppConfig.py](/C:/Users/loren/lbcode/vscode%20test/LoneWolfSheet/modules/AppConfig.py) to load typed item definitions.   Keep this alongside `LoadInventoryRules()`. You want a real in-memory catalog, not raw dict lookups all over the code.
+d
+3. Add equipped-weapon state to [modules/DomainModels.py](/C:/Users/loren/lbcode/vscode%20test/LoneWolfSheet/modules/DomainModels.py).|    Add `EquippedWeapon`, persist it in `ToDict()` / `FromDict()`, and clear it automatically if the owned item is removed.
+d
 4. Build item lookup and resolution helpers in [modules/RuleBooks1to5.py](/C:/Users/loren/lbcode/vscode%20test/LoneWolfSheet/modules/RuleBooks1to5.py).
    Support:
    - exact case-insensitive match

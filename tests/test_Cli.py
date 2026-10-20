@@ -1,8 +1,31 @@
 import builtins
 
+import pytest
+
 from modules.Cli import CliApp
 from modules.DomainModels import CharacterSheet, Endurance
 from modules.JsonRepository import JsonRepository
+
+
+@pytest.mark.parametrize("initial_count", [0, 8])
+def test_cli_play_add_backpack(tmp_path, monkeypatch, capsys, initial_count):
+    repo = JsonRepository()
+    save_path = tmp_path / "character.json"
+    sheet = CharacterSheet(
+        Name="Lone Wolf", CombatSkill=17, Endurance=Endurance(Current=22, Max=22)
+    )
+    sheet.Inventory.BackpackItems = ["meal"] * initial_count
+    repo.SaveCharacter(sheet, save_path)
+    inputs = iter(["add-backpack meal", "quit", "no"])
+    monkeypatch.setattr(builtins, "input", lambda _prompt="": next(inputs))
+
+    assert CliApp(repo).Run(["play", str(save_path)]) == 0
+
+    output = capsys.readouterr().out
+    assert "Unknown command" not in output
+    loaded = repo.LoadCharacter(save_path)
+    assert len(loaded.Inventory.BackpackItems) == min(initial_count + 1, 8)
+    assert ("Backpack item added." in output) == (initial_count < 8)
 
 
 def _CreateCharacter(app: CliApp, tmp_path, monkeypatch, rolls: list[int], inputs: list[str]):

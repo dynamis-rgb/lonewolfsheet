@@ -354,7 +354,8 @@ class CliApp:
 
                 Added = Session.Sheet.Inventory.AddBackpackItem(Name)
                 Session.Save()
-                print("Backpack item added. " if added else "Invalid item name.")
+                print("Backpack item added." if Added else "Invalid item name.")
+                continue
 
 
             

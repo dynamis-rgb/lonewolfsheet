@@ -14,6 +14,7 @@ from modules.AppConfig import AppConfig
 from modules.AppConfig import LoadAppConfig, LoadInventoryRules
 
 from modules.RuleBooks1to5 import RuleBooks1to5
+from modules.NameResolution import ResolveName
 
 
 
@@ -465,14 +466,11 @@ class CliApp:
 
     def _SelectOwnedItem(self, Query: str, Names: list[str]) -> str | None:
         # Resolve saved names, so old casing and custom item names remain removable.
-        Key = Query.strip().casefold()
-        Exact = [Name for Name in Names if Name.casefold() == Key]
-        Candidates = Exact or [Name for Name in Names if Name.casefold().startswith(Key)]
-        Candidates = Candidates or [Name for Name in Names if Key in Name.casefold()]
-        if len(Candidates) == 1:
-            return Candidates[0]
-        if Candidates:
-            return self._ChooseItem(tuple(sorted(Candidates, key=str.casefold)))
+        Result = ResolveName(Query, Names)
+        if Result.Status == "found":
+            return Result.Name
+        if Result.Status == "ambiguous":
+            return self._ChooseItem(Result.Candidates)
         print(f"No matching owned item: {Query}")
         return None
 

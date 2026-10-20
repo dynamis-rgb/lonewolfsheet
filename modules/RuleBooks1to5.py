@@ -6,8 +6,11 @@ from pathlib import Path
 from types import MappingProxyType
 from typing import Literal, Mapping
 
-from modules.AppConfig import InventoryRules, ItemDefinition, LoadItemCatalog
+from modules.AppConfig import (
+    DisciplineDefinition, InventoryRules, ItemDefinition, LoadDisciplineCatalog, LoadItemCatalog,
+)
 from modules.DomainModels import CharacterSheet
+from modules.NameResolution import BuildNameIndex, ResolveName
 
 
 @dataclass(frozen=True)
@@ -21,6 +24,14 @@ class ItemResolutionResult:
     Status: Literal["found", "not_found", "ambiguous"]
     Name: str | None = None
     Definition: ItemDefinition | None = None
+    Candidates: tuple[str, ...] = ()
+
+
+@dataclass(frozen=True)
+class DisciplineResolutionResult:
+    Status: Literal["found", "not_found", "ambiguous"]
+    Name: str | None = None
+    Definition: DisciplineDefinition | None = None
     Candidates: tuple[str, ...] = ()
 
 
@@ -43,17 +54,28 @@ class RuleBooks1to5:
         self,
         InventoryRules: InventoryRules,
         ItemCatalog: Mapping[str, ItemDefinition] | None = None,
+        DisciplineCatalog: Mapping[str, DisciplineDefinition] | None = None,
     ) -> None:
         self.InventoryRules = InventoryRules
         self.ItemCatalog = MappingProxyType(
             dict(LoadItemCatalog() if ItemCatalog is None else ItemCatalog)
         )
-        self._ItemNames: dict[str, str] = {}
-        for Name in self.ItemCatalog:
-            Normalized = Name.strip().casefold()
-            if not Normalized or Normalized in self._ItemNames:
-                raise ValueError(f"Item catalog contains a blank or duplicate item name: {Name!r}")
-            self._ItemNames[Normalized] = Name
+        self._ItemNames = BuildNameIndex(self.ItemCatalog)
+        self.DisciplineCatalog = MappingProxyType(
+            dict(LoadDisciplineCatalog() if DisciplineCatalog is None else DisciplineCatalog)
+        )
+        self._DisciplineNames = BuildNameIndex(self.DisciplineCatalog)
+
+    def GetDisciplineDefinition(self, Name: str) -> DisciplineDefinition | None:
+        CanonicalName = self._DisciplineNames.get(Name.strip().casefold())
+        return self.DisciplineCatalog[CanonicalName] if CanonicalName is not None else None
+
+    def ResolveDiscipline(self, Query: str) -> DisciplineResolutionResult:
+        Result = ResolveName(Query, self.DisciplineCatalog)
+        return DisciplineResolutionResult(
+            Status=Result.Status, Name=Result.Name, Candidates=Result.Candidates,
+            Definition=self.DisciplineCatalog[Result.Name] if Result.Name is not None else None,
+        )
 
     def GetItemDefinition(self, Name: str) -> ItemDefinition | None:
         """Look up a full item name, ignoring case and surrounding whitespace."""
@@ -107,39 +129,12 @@ class RuleBooks1to5:
         )
 
     def ResolveItem(self, Query: str) -> ItemResolutionResult:
-        """Resolve exact names first, then prefixes, then substrings.
+        Result = ResolveName(Query, self.ItemCatalog)
+        return ItemResolutionResult(
+            Status=Result.Status, Name=Result.Name, Candidates=Result.Candidates,
+            Definition=self.ItemCatalog[Result.Name] if Result.Name is not None else None,
+        )
 
-        An ambiguous prefix returns its candidates without trying substring matching.
-        Returned names always retain the catalog's canonical spelling.
-        """
-        Normalized = Query.strip().casefold()
-        if not Normalized:
-            return ItemResolutionResult(Status="not_found")
-
-        Exact = self._ItemNames.get(Normalized)
-        if Exact is not None:
-            return ItemResolutionResult(
-                Status="found", Name=Exact, Definition=self.ItemCatalog[Exact]
-            )
-
-        Candidates = [
-            Name for Key, Name in self._ItemNames.items() if Key.startswith(Normalized)
-        ]
-        if not Candidates:
-            Candidates = [
-                Name for Key, Name in self._ItemNames.items() if Normalized in Key
-            ]
-        if len(Candidates) == 1:
-            Name = Candidates[0]
-            return ItemResolutionResult(
-                Status="found", Name=Name, Definition=self.ItemCatalog[Name]
-            )
-        if Candidates:
-            return ItemResolutionResult(
-                Status="ambiguous", Candidates=tuple(sorted(Candidates, key=str.casefold))
-            )
-        return ItemResolutionResult(Status="not_found")
-    
     def _SlotCount(self, Names: list[str]) -> int:
         # Legacy custom items still occupy one slot until cataloged.
         return sum(

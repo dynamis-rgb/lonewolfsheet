@@ -3,6 +3,48 @@
     "MaxBackpackItems": 8,
     "MaxSpecialItems": 12
   },
+  "Disciplines": {
+    "Camouflage": {
+      "Description": "",
+      "AvailableBooks": [1, 2, 3, 4, 5]
+    },
+    "Hunting": {
+      "Description": "",
+      "AvailableBooks": [1, 2, 3, 4, 5]
+    },
+    "Sixth Sense": {
+      "Description": "",
+      "AvailableBooks": [1, 2, 3, 4, 5]
+    },
+    "Tracking": {
+      "Description": "",
+      "AvailableBooks": [1, 2, 3, 4, 5]
+    },
+    "Healing": {
+      "Description": "",
+      "AvailableBooks": [1, 2, 3, 4, 5]
+    },
+    "Weaponskill": {
+      "Description": "",
+      "AvailableBooks": [1, 2, 3, 4, 5]
+    },
+    "Mindshield": {
+      "Description": "",
+      "AvailableBooks": [1, 2, 3, 4, 5]
+    },
+    "Mindblast": {
+      "Description": "",
+      "AvailableBooks": [1, 2, 3, 4, 5]
+    },
+    "Animal Kinship": {
+      "Description": "",
+      "AvailableBooks": [1, 2, 3, 4, 5]
+    },
+    "Mind Over Matter": {
+      "Description": "",
+      "AvailableBooks": [1, 2, 3, 4, 5]
+    }
+  },
   "Items": {
     "Meal": {
       "Category": "backpack",
